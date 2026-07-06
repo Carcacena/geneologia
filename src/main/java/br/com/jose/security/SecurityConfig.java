@@ -41,12 +41,10 @@ public class SecurityConfig {
                     allowedOrigins.add("http://127.0.0.1:5500"); // Adicionado para Live Server do VS Code
                     
                     // CORREÇÃO 1: Adiciona explicitamente a URL real de produção da Railway
-                   // allowedOrigins.add("https://railway.app");
-                      allowedOrigins.add("https://geneologia-production.up.railway.app/login.html";
-                   
-                    if (frontendUrl != null && !frontendUrl.isEmpty() && !frontendUrl.equals("http://localhost:8080")) {
-                        allowedOrigins.add(frontendUrl);
-                    }
+                    allowedOrigins.add("https://railway.app");
+                    //if (frontendUrl != null && !frontendUrl.isEmpty() && !frontendUrl.equals("http://localhost:8080")) {
+                    //    allowedOrigins.add(frontendUrl);
+                   // }
                     
                     corsConfig.setAllowedOrigins(allowedOrigins);
                     corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
