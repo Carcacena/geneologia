@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin; // Importado
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -22,6 +23,7 @@ import br.com.jose.security.JwtService;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = "*", allowedHeaders = "*") // Habilita o CORS para o frontend se conectar
 public class LoginController {
 
     @Autowired
@@ -54,7 +56,5 @@ public class LoginController {
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                              .body(Collections.singletonMap("error", "Login inválido"));
-  
     }
-    
 }
