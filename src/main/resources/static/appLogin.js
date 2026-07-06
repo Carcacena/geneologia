@@ -1,37 +1,37 @@
 async function logar() {
     const login = document.getElementById("login").value;
-	
     const senha = document.getElementById("senha").value;
 
-    const response = await fetch("http://localhost:8080/auth/login", {
+    try {
+        // CORREÇÃO 1: Alterado de localhost para a URL ativa do seu Railway
+        const response = await fetch("https://genealogia-production.up.railway.app/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                login: login,
+                senha: senha
+            })
+        });
 
-        method: "POST",
+        if (response.ok) {
+            // CORREÇÃO 2: O seu backend retorna um JSON {"token": "..."} e não texto puro
+            const dados = await response.json();
 
-        headers: {
-            "Content-Type": "application/json"
-        },
-		
-        body: JSON.stringify({
-            login: login,
-            senha: senha
-        })
-    });
+            // Salva apenas a string do token que está dentro do objeto JSON
+            localStorage.setItem("token", dados.token);
 
-	if (response.ok) {
+            sessionStorage.setItem("tipo", "0");
 
-	    const token = await response.text();
+            console.log("TIPO SALVO:", sessionStorage.getItem("tipo"));
 
-	    localStorage.setItem("token", token);
-
-	    sessionStorage.setItem("tipo", "0");
-
-	    console.log("TIPO SALVO:");
-	    console.log(sessionStorage.getItem("tipo"));
-
-	    window.location.href = "menu.html";
-
-	} else {
-
-	    alert("Login inválido");
-	}
-	}
+            window.location.href = "menu.html";
+        } else {
+            alert("Login inválido. Verifique o usuário e a senha.");
+        }
+    } catch (error) {
+        console.error("Erro na requisição:", error);
+        alert("Não foi possível conectar ao servidor. Verifique as configurações de CORS no Spring Boot.");
+    }
+}
