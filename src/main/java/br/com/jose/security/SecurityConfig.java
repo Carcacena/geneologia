@@ -23,8 +23,6 @@ public class SecurityConfig {
     @Autowired
     private JwtFilter jwtFilter;
 
-    // Busca a URL do frontend na nuvem via variável de ambiente.
-    // Se não existir (local), assume "http://localhost:8080" ou você pode alterar para a porta do seu front (ex: 3000, 5173).
     @Value("${app.frontend.url:http://localhost:8080}")
     private String frontendUrl;
 
@@ -36,39 +34,41 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfig = new org.springframework.web.cors.CorsConfiguration();
                     
-                    // Lista dinâmica de origens permitidas
                     List<String> allowedOrigins = new ArrayList<>();
                     allowedOrigins.add("http://localhost:8080");
-                    allowedOrigins.add("http://localhost:3000"); // Comum para React local
-                    allowedOrigins.add("http://localhost:5173"); // Comum para Vite/Vue/React local
+                    allowedOrigins.add("http://localhost:3000"); 
+                    allowedOrigins.add("http://localhost:5173");
+                    allowedOrigins.add("http://127.0.0.1:5500"); // Adicionado para Live Server do VS Code
                     
-                    // Adiciona a URL de produção se ela estiver configurada
-                    if (frontendUrl != null && !frontendUrl.isEmpty()) {
+                    // CORREÇÃO 1: Adiciona explicitamente a URL real de produção da Railway
+                    allowedOrigins.add("https://railway.app");
+                    
+                    if (frontendUrl != null && !frontendUrl.isEmpty() && !frontendUrl.equals("http://localhost:8080")) {
                         allowedOrigins.add(frontendUrl);
                     }
                     
                     corsConfig.setAllowedOrigins(allowedOrigins);
-                    // Adicionado o método OPTIONS, fundamental para deploy em nuvem
                     corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-                    // Adicionado Cache-Control para evitar problemas de cache de token
-                    corsConfig.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
+                    
+                    // CORREÇÃO 2: Aceita qualquer cabeçalho enviado pelo navegador
+                    corsConfig.setAllowedHeaders(List.of("*")); 
                     corsConfig.setAllowCredentials(true);
                     
                     return corsConfig;
                 }))
                 .authorizeHttpRequests(auth -> auth
-                        // Libera todas as requisições de pre-flight (OPTIONS) do proxy da nuvem
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
 
+                        // CORREÇÃO 3: Ajustado o padrão AntMatcher para capturar arquivos estáticos corretamente em qualquer nível
                         .requestMatchers(
                             "/",
-                            "/*.html",
-                            "/*.js",
-                            "/*.css",
-                            "/*.jpg",
-                            "/*.png",
+                            "/**/*.html",
+                            "/**/*.js",
+                            "/**/*.css",
+                            "/**/*.jpg",
+                            "/**/*.png",
                             "/favicon.ico",
                             "/mp3/**"
                         ).permitAll()
