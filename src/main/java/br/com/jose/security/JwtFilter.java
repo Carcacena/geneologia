@@ -74,18 +74,7 @@ protected void doFilterInternal(HttpServletRequest request,
     }
     //mudou local
 // mudou 05/07/2026,se nao resolveu 502 -->  remover
-@Bean
-public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-        .csrf(csrf -> csrf.disable()) // Desative se for uma API REST stateless
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/auth/**", "/login", "/favicon.ico").permitAll() // Permite login e favicon
-            .anyRequest().authenticated()
-        )
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        
-    return http.build();
-}
+
        
 }
 }
