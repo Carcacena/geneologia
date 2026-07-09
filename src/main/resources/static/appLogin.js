@@ -5,15 +5,12 @@ async function logar() {
  //   const response = await fetch(`${API_URL}/auth/login`, {
     const API_URL = window.location.origin;
 
-    const response = await fetch(`${API_URL}/auth/login`, {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-        login,
-        senha
-    })
+    const response = await fetch(`${API_URL}/auth/login`, { 
+          method: "POST", 
+          headers: { "Content-Type": "application/json" }, 
+          body: JSON.stringify({ login, senha }) 
+    });
+  
 
 });
 
