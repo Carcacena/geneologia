@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.CrossOrigin; // Importado
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -23,7 +23,7 @@ import br.com.jose.security.JwtService;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "*", allowedHeaders = "*") // Habilita o CORS para o frontend se conectar
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class LoginController {
 
     @Autowired
@@ -39,21 +39,35 @@ public class LoginController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@RequestHeader("Authorization") String token) {
-        blacklistService.add(token);
+        if (token != null && token.startsWith("Bearer ")) {
+            blacklistService.add(token.substring(7));
+        } else if (token != null) {
+            blacklistService.add(token);
+        }
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody LoginDTO login) {
+        // 1. Busca o usuário diretamente na tabela pelo campo login mapeado no DTO
         Usuario user = usuarioRepository.findByLogin(login.getLogin());
 
+        // 2. Compara a senha digitada '123' com o Hash BCrypt ativo no MySQL
         if (user != null && encoder.matches(login.getSenha(), user.getSenha())) {
-            String token = jwtService.gerarToken(user.getLogin(), user.getPerfil());
+            
+            // 3. Força o perfil a ir em maiúsculo (ADMIN) para evitar conflitos de validação no JWT
+            String perfilSeguro = user.getPerfil() != null ? user.getPerfil().toUpperCase() : "USER";
+            
+            // 4. Gera o token utilizando a sua assinatura do JwtService
+            String token = jwtService.gerarToken(user.getLogin(), perfilSeguro);
+            
+            // 5. Monta a resposta estruturada para o appLogin.js receber
             Map<String, String> response = new HashMap<>();
             response.put("token", token);
             return ResponseEntity.ok(response);
         }
 
+        // Caso a senha ou o usuário estejam incorretos, retorna o erro esperado pelo frontend
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                              .body(Collections.singletonMap("error", "Login inválido"));
     }

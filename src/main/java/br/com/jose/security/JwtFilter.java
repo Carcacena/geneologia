@@ -1,14 +1,12 @@
 package br.com.jose.security;
-
 import java.io.IOException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,59 +21,48 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
-   @Override
-protected void doFilterInternal(HttpServletRequest request,
-                                HttpServletResponse response,
-                                FilterChain filterChain)
-        throws ServletException, IOException {
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
-    String path = request.getServletPath();
+        String authHeader = request.getHeader("Authorization");
 
-    if (path.equals("/auth/login")) {
-        filterChain.doFilter(request, response);
-        return;
-    }
-
-    String authHeader = request.getHeader("Authorization");
-
-    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-        filterChain.doFilter(request, response);
-        return;
-    }
-
-    String token = authHeader.substring(7);
-
-    try {
-        String username = jwtService.extrairUsername(token);
-
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-            boolean valido = jwtService.validarToken(token, userDetails);
-
-            if (valido) {
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities());
-
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            }
+        // Se não houver cabeçalho ou não começar com Bearer, repassa para o Spring decidir se barra ou não
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
         }
 
-        filterChain.doFilter(request, response);
+        String token = authHeader.substring(7);
 
-    } catch (Exception e) {
-        System.out.println("JWT ERROR = " + e.getMessage());
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        return;
+        try {
+            String username = jwtService.extrairUsername(token);
+
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+                if (jwtService.validarToken(token, userDetails)) {
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities());
+                    
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
+            }
+
+            // Continua a requisição normalmente após validar o token
+            filterChain.doFilter(request, response);
+
+        } catch (Exception e) {
+            logger.error("JWT ERROR = " + e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
     }
-    //mudou local
-// mudou 05/07/2026,se nao resolveu 502 -->  remover
-
-       
 }
-}
-

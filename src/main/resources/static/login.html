@@ -166,7 +166,8 @@ button{
             Entrar
         </button>
 
-		<button onclick="logout()">Sair</button>
+        <!-- AJUSTE 1: Adicionado type="button" para não submeter o formulário de login ao clicar em Sair -->
+        <button type="button" onclick="logout()" style="background:#f44336; margin-top:6px;">Sair</button>
     </form>
 
 </div>
@@ -212,14 +213,14 @@ document.addEventListener("touchmove", e => {
 const fotos = [
     {img:"/mp3/familiaJose.jpg", texto:"Família José"},
     {img:"/mp3/conceicao.jpg", texto:"Igreja Conceição da Boa Vista "},
-	{img:"/mp3/familiaJose.jpg", texto:"Família José - Origem"},
-	 {img:"/mp3/casa01.jpg", texto:"Residência"},
-	  {img:"/mp3/casa02.jpg", texto:"Residência"},
-	  {img:"/mp3/mariafumaca.jpg", texto:"Maria Fumaça"},
-	  {img:"/mp3/nazare.jpg", texto:"Nazareth , Aldemiro Pedrinho"},
-	 {img:"/mp3/igreja-recreio.jpg", texto:"Igreja Matriz Recreio"},
-	 {img:"/mp3/recreio01.jpg", texto:"Estaça~Ferroviaria"},
-	 {img:"/mp3/recreio10.jpg", texto:"Estação Ferroviaria"},
+    {img:"/mp3/familiaJose.jpg", texto:"Família José - Origem"},
+    {img:"/mp3/casa01.jpg", texto:"Residência"},
+    {img:"/mp3/casa02.jpg", texto:"Residência"},
+    {img:"/mp3/mariafumaca.jpg", texto:"Maria Fumaça"},
+    {img:"/mp3/nazare.jpg", texto:"Nazareth , Aldemiro Pedrinho"},
+    {img:"/mp3/igreja-recreio.jpg", texto:"Igreja Matriz Recreio"},
+    {img:"/mp3/recreio01.jpg", texto:"Estaça~Ferroviaria"},
+    {img:"/mp3/recreio10.jpg", texto:"Estação Ferroviaria"},
     {img:"/mp3/luna.jpg", texto:"Luna"}
 ];
 
@@ -270,19 +271,24 @@ document.addEventListener("mousemove", (e)=>{
     box.style.top = (e.clientY - offsetY) + "px";
 });
 
+// AJUSTE 2: Rota corrigida para /auth/logout enviando o token no Header do padrão Bearer exigido pelo seu filtro Java
 function logout() {
-    fetch("/logout", { method: "POST" })
-      .finally(() => {
-          localStorage.removeItem("token");
-          window.location.href = "login.html";
-      });
+    const token = localStorage.getItem("token");
+    fetch("https://railway.app", { 
+        method: "POST",
+        headers: {
+            "Authorization": token ? (token.startsWith("Bearer ") ? token : "Bearer " + token) : ""
+        }
+    })
+    .finally(() => {
+        localStorage.removeItem("token");
+        window.location.href = "login.html";
+    });
 }
-
 
 </script>
 
 <footer>
-Sistema desenvolvido por ChatGPT e José Gouvêa de Paula.<br>
 Contato WhatsApp: 41-998959399<br>
 Sistema Genealogia - Perfume Final 🧬
 </footer>

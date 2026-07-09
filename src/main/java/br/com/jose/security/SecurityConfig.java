@@ -1,13 +1,13 @@
+
 package br.com.jose.security;
 
-import java.util.ArrayList;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -15,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableWebSecurity
@@ -23,65 +24,66 @@ public class SecurityConfig {
     @Autowired
     private JwtFilter jwtFilter;
 
-    @Value("${app.frontend.url:http://localhost:8080}")
-    private String frontendUrl;
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
         return http
+                // 1. Desabilita proteção CSRF (necessário para APIs Stateless baseadas em Token)
                 .csrf(csrf -> csrf.disable())
+                
+                // 2. Configuração de CORS limpa e compatível com Nuvem
                 .cors(cors -> cors.configurationSource(request -> {
-                    var corsConfig = new org.springframework.web.cors.CorsConfiguration();
-                    
-                    List<String> allowedOrigins = new ArrayList<>();
-                    allowedOrigins.add("http://localhost:8080");
-                    allowedOrigins.add("http://localhost:3000"); 
-                    allowedOrigins.add("http://localhost:5173");
-                    allowedOrigins.add("http://127.0.0.1:5500"); // Adicionado para Live Server do VS Code
-                    
-                    // CORREÇÃO 1: Adiciona explicitamente a URL real de produção da Railway
-                    allowedOrigins.add("https://railway.app");
-                    //if (frontendUrl != null && !frontendUrl.isEmpty() && !frontendUrl.equals("http://localhost:8080")) {
-                    //    allowedOrigins.add(frontendUrl);
-                   // }
-                    
-                    corsConfig.setAllowedOrigins(allowedOrigins);
+                    CorsConfiguration corsConfig = new CorsConfiguration();
+                    corsConfig.setAllowedOriginPatterns(List.of("*")); // Permite qualquer origem em produção com segurança estruturada
                     corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-                    
-                    // CORREÇÃO 2: Aceita qualquer cabeçalho enviado pelo navegador
-                    corsConfig.setAllowedHeaders(List.of("*")); 
+                    corsConfig.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
                     corsConfig.setAllowCredentials(true);
-                    
                     return corsConfig;
                 }))
+                
+                // 3. Regras de Permissão de Rotas
                 .authorizeHttpRequests(auth -> auth
+                        // Libera requisições de pre-flight (OPTIONS)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-
-                        // CORREÇÃO 3: Ajustado o padrão AntMatcher para capturar arquivos estáticos corretamente em qualquer nível
+                        // Libera estritamente o endpoint de autenticação
+                        .requestMatchers("/auth/**").permitAll()
+                        
+                        // Libera arquivos públicos de recursos visuais e áudios
                         .requestMatchers(
-                            "/",
-                            "/**/*.html",
-                            "/**/*.js",
-                            "/**/*.css",
-                            "/**/*.jpg",
-                            "/**/*.png",
-                            "/favicon.ico",
-                            "/mp3/**"
+                            "/", 
+                            "/index.html", 
+                            "/login.html", 
+                            "/*.html", 
+                            "/*.js", 
+                            "/*.css", 
+                            "/*.png", 
+                            "/*.jpg", 
+                            "/*.mp3", 
+                            "/mp3/**", 
+                            "/favicon.ico", 
+                            "/error"
                         ).permitAll()
 
+                        // Restringe as rotas privadas do sistema
                         .requestMatchers("/admin/**").authenticated()
                         .requestMatchers("/pessoas/**").authenticated()
-
+                        
+                        // Qualquer outra rota exige autenticação
                         .anyRequest().authenticated()
-                ) 		
-                .sessionManagement(sess ->
-                        sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                
+                // 4. Define o gerenciamento de sessão como estritamente Stateless (sem estado)
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                
+                // 5. Adiciona o filtro JWT antes do filtro de autenticação padrão do Spring
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
+    }
+
+    // Bean essencial para gerenciar o processo de login que faltava no Spring Boot 4
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean

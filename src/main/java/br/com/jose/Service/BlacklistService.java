@@ -3,24 +3,18 @@ package br.com.jose.Service;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.stereotype.Service;
+
+@Service
 public class BlacklistService {
 
-	 private final Set<String> blacklist = new HashSet<>();
+    private final Set<String> blacklist = new HashSet<>();
 
-	    // Adiciona token à lista
-	    public void add(String token) {
-	        blacklist.add(token);
-	    }
+    public void add(String token) {
+        blacklist.add(token);
+    }
 
-	    // Verifica se token está bloqueado
-	    public boolean isBlacklisted(String token) {
-	        return blacklist.contains(token);
-	    }
-	
-	
-	
-	
-	
-	
-	
+    public boolean isBlacklisted(String token) {
+        return blacklist.contains(token);
+    }
 }
