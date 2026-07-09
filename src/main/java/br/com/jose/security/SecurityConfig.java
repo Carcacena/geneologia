@@ -27,40 +27,34 @@ public class SecurityConfig {
 
     @Autowired
     private JwtFilter jwtFilter;
+    
+ @Bean
+CorsConfigurationSource corsConfigurationSource() {
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
 
-        CorsConfiguration configuration = new CorsConfiguration();
+    configuration.setAllowedOrigins(List.of(
+        "https://geneologia-production.up.railway.app"
+    ));
 
-        configuration.setAllowedOrigins(List.of(
-                "https://geneologia-production.up.railway.app"
-        ));
+    configuration.setAllowedMethods(List.of(
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "OPTIONS"
+    ));
 
-        configuration.setAllowedMethods(List.of(
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "OPTIONS",
-                "PATCH"
-        ));
+    configuration.setAllowedHeaders(List.of("*"));
+    configuration.setAllowCredentials(true);
 
-        configuration.setAllowedHeaders(List.of("*"));
+    UrlBasedCorsConfigurationSource source =
+            new UrlBasedCorsConfigurationSource();
 
-        configuration.setExposedHeaders(List.of("Authorization"));
+    source.registerCorsConfiguration("/**", configuration);
 
-        configuration.setAllowCredentials(true);
-
-        configuration.setMaxAge(3600L);
-
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
-
-        source.registerCorsConfiguration("/**", configuration);
-
-        return source;
-    }
+    return source;
+}
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
