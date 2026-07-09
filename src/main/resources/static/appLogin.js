@@ -1,9 +1,11 @@
 async function logar() { 
     const login = document.getElementById('login').value; 
     const senha = document.getElementById('senha').value; 
-    const API_URL = "https://geneologia-api-production.up.railway.app";
+ //   const API_URL = "https://geneologia-api-production.up.railway.app";
+ //   const response = await fetch(`${API_URL}/auth/login`, {
+    const API_URL = window.location.origin;
+
     const response = await fetch(`${API_URL}/auth/login`, {
-   // const response = await fetch(`${API_URL}/login`, {
     method: "POST",
     headers: {
         "Content-Type": "application/json"
@@ -12,6 +14,7 @@ async function logar() {
         login,
         senha
     })
+
 });
 
     if (response.ok) { 
