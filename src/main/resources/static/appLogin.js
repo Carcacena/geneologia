@@ -1,12 +1,18 @@
 async function logar() { 
     const login = document.getElementById('login').value; 
     const senha = document.getElementById('senha').value; 
+    const API_URL = "https://geneologia-api-production.up.railway.app";
 
-    const response = await fetch('https://railway.app', { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ login: login, senha: senha }) 
-    }); 
+    const response = await fetch(`${API_URL}/login`, {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        login,
+        senha
+    })
+});
 
     if (response.ok) { 
         // CORRIGIDO: Lê a resposta como JSON em vez de texto bruto
