@@ -2,7 +2,6 @@ async function logar() {
     const login = document.getElementById('login').value; 
     const senha = document.getElementById('senha').value; 
 
-    // ALTERADO: Adicionada a URL completa do seu Railway
     const response = await fetch('https://railway.app', { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' }, 
@@ -10,9 +9,11 @@ async function logar() {
     }); 
 
     if (response.ok) { 
-        const token = await response.text(); 
+        // CORRIGIDO: Lê a resposta como JSON em vez de texto bruto
+        const data = await response.json(); 
         
-        localStorage.setItem('token', token); 
+        // CORRIGIDO: Extrai a propriedade 'token' enviada pelo Map do Spring Boot
+        localStorage.setItem('token', data.token); 
         sessionStorage.setItem('tipo', '0'); 
         
         console.log('TIPO SALVO:'); 
