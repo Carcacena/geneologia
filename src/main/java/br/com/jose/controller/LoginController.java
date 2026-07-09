@@ -34,41 +34,46 @@ public class LoginController {
 
     @Autowired
     private JwtService jwtService;
-
     private final BlacklistService blacklistService = new BlacklistService();
-
-    @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String token) {
-        if (token != null && token.startsWith("Bearer ")) {
-            blacklistService.add(token.substring(7));
-        } else if (token != null) {
-            blacklistService.add(token);
-        }
-        return ResponseEntity.ok().build();
-    }
-
+   
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody LoginDTO login) {
-        // 1. Busca o usuário diretamente na tabela pelo campo login mapeado no DTO
-        Usuario user = usuarioRepository.findByLogin(login.getLogin());
 
-        // 2. Compara a senha digitada '123' com o Hash BCrypt ativo no MySQL
-        if (user != null && encoder.matches(login.getSenha(), user.getSenha())) {
-            
-            // 3. Força o perfil a ir em maiúsculo (ADMIN) para evitar conflitos de validação no JWT
-            String perfilSeguro = user.getPerfil() != null ? user.getPerfil().toUpperCase() : "USER";
-            
-            // 4. Gera o token utilizando a sua assinatura do JwtService
-            String token = jwtService.gerarToken(user.getLogin(), perfilSeguro);
-            
-            // 5. Monta a resposta estruturada para o appLogin.js receber
-            Map<String, String> response = new HashMap<>();
-            response.put("token", token);
-            return ResponseEntity.ok(response);
-        }
+    System.out.println("===== LOGIN =====");
+    System.out.println("Login recebido: " + login.getLogin());
 
-        // Caso a senha ou o usuário estejam incorretos, retorna o erro esperado pelo frontend
+    Usuario user = usuarioRepository.findByLogin(login.getLogin());
+
+    if (user == null) {
+        System.out.println("Usuário NÃO encontrado.");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                             .body(Collections.singletonMap("error", "Login inválido"));
+                .body(Collections.singletonMap("error", "Usuário não encontrado"));
     }
+
+    System.out.println("Usuário encontrado.");
+    System.out.println("Hash no banco: " + user.getSenha());
+
+    boolean senhaOk = encoder.matches(login.getSenha(), user.getSenha());
+    System.out.println("Senha confere? " + senhaOk);
+
+    if (!senhaOk) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Collections.singletonMap("error", "Senha inválida"));
+    }
+
+    String perfilSeguro = user.getPerfil() != null
+            ? user.getPerfil().toUpperCase()
+            : "USER";
+
+    String token = jwtService.gerarToken(user.getLogin(), perfilSeguro);
+
+    Map<String, String> response = new HashMap<>();
+    response.put("token", token);
+
+    return ResponseEntity.ok(response);
 }
+}
+
+
+
+ 
