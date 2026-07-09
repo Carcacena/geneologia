@@ -35,7 +35,18 @@ public class LoginController {
     @Autowired
     private JwtService jwtService;
     private final BlacklistService blacklistService = new BlacklistService();
-   
+
+   @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String token) {
+    if (token != null && token.startsWith("Bearer ")) {
+        blacklistService.add(token.substring(7));
+    } else if (token != null) {
+        blacklistService.add(token);
+    }
+    return ResponseEntity.ok().build();
+    }
+
+    
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody LoginDTO login) {
 
@@ -50,7 +61,7 @@ public class LoginController {
                 .body(Collections.singletonMap("error", "Usuário não encontrado"));
     }
 
-    System.out.println("Usuário encontrado.");
+    System.out.println("Usuário encontrado.");    
     System.out.println("Hash no banco: " + user.getSenha());
 
     boolean senhaOk = encoder.matches(login.getSenha(), user.getSenha());
@@ -71,9 +82,8 @@ public class LoginController {
     response.put("token", token);
 
     return ResponseEntity.ok(response);
+    }
 }
-}
-
 
 
  
