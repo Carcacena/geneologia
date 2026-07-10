@@ -7,7 +7,10 @@ async function logar(event) {
 
   try {
     // ATENÇÃO: Substitua a URL abaixo pela URL do seu backend no Railway
-    const response = await fetch('https://railway.app', { 
+
+    const response = await fetch
+	  ("https://geneologia-production.up.railway.app/auth/login",{
+    //const response = await fetch('https://railway.app', { 
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
