@@ -1,3 +1,5 @@
+
+
 async function logar(event) { 
   // Impede a página de recarregar ao enviar o formulário
   if (event) event.preventDefault(); 
@@ -35,4 +37,4 @@ async function logar(event) {
   } // <-- Fecha o bloco catch
 }   // <-- FILHO DO COBOL: Essa chave fecha a "async function logar()". Faltava ela!   
 
-
+}
