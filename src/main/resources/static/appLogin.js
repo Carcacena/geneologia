@@ -1,40 +1,37 @@
-async function logar(event) { 
-  // Impede a página de recarregar ao enviar o formulário
-  if (event) event.preventDefault(); 
+async function logar(event) {
 
-  const login = document.getElementById('login').value; 
-  const senha = document.getElementById('senha').value;
+    if (event) event.preventDefault();
 
-  try {
-    // ATENÇÃO: Substitua a URL abaixo pela URL do seu backend no Railway
+    const login = document.getElementById("login").value;
+    const senha = document.getElementById("senha").value;
 
-    const response = await fetch
-	  ("https://geneologia-production.up.railway.app/",{
-     method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ 
-        login: login, 
-        senha: senha 
-      })
-    });
+    try {
 
-    if (!response.ok) {
-      throw new Error('Erro ao autenticar. Verifique suas credenciais.');
+        const API_URL = window.location.origin;
+
+        const response = await fetch(`${API_URL}/auth/login`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                login,
+                senha
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error("Erro ao autenticar. Verifique suas credenciais.");
+        }
+
+        const dadosResposta = await response.json();
+
+        localStorage.setItem("token", dadosResposta.token);
+
+        window.location.href = "menu.html";
+
+    } catch (error) {
+        console.error(error);
+        alert(error.message);
     }
-
-    const dadosResposta = await response.json();
-    console.log('Login realizado com sucesso:', dadosResposta);
-
-    // Exemplo: Salvar token JWT e redirecionar
-    // localStorage.setItem('token', dadosResposta.token);
-    // window.location.href = '/dashboard.html';
-
-  } catch (error) {
-    console.error('Erro na requisição:', error);
-    alert(error.message);
-  } // <-- Fecha o bloco catch
-}   // <-- FILHO DO COBOL: Essa chave fecha a "async function logar()". Faltava ela!   
-
 }
