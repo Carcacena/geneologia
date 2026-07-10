@@ -10,7 +10,7 @@ async function logar(event) {
 
     const response = await fetch
 	  ("https://geneologia-production.up.railway.app",{
-    //const response = await fetch('https://railway.app', { 
+    //const response = await fetch('https://railway.app/auth/login', { 
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
