@@ -1,5 +1,3 @@
-
-
 async function logar(event) { 
   // Impede a página de recarregar ao enviar o formulário
   if (event) event.preventDefault(); 
