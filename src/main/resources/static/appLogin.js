@@ -1,30 +1,36 @@
-async function logar() { 
-// Corrigido a declaração da variável e o fechamento do parêntese do getElementById
-const login = document.getElementById('login').value; 
-const senha = document.getElementById('senha').value;
+async function logar(event) { 
+  // Impede a página de recarregar ao enviar o formulário
+  if (event) event.preventDefault(); 
 
-try {
-  // Ajuste a URL final para a rota correta do seu backend
-  const response = await fetch('https://railway.app', { 
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ 
-      login: login, 
-      senha: senha 
-    })
-  });
+  const login = document.getElementById('login').value; 
+  const senha = document.getElementById('senha').value;
 
-  // Verifica se a requisição foi bem sucedida (status 200-299)
-  if (!response.ok) {
-    throw new Error('Erro ao autenticar. Verifique suas credenciais.');
+  try {
+    // ATENÇÃO: Substitua a URL abaixo pela URL do seu backend no Railway
+    const response = await fetch('https://railway.app', { 
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ 
+        login: login, 
+        senha: senha 
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao autenticar. Verifique suas credenciais.');
+    }
+
+    const dadosResposta = await response.json();
+    console.log('Login realizado com sucesso:', dadosResposta);
+
+    // Exemplo: Salvar token JWT e redirecionar
+    // localStorage.setItem('token', dadosResposta.token);
+    // window.location.href = '/dashboard.html';
+
+  } catch (error) {
+    console.error('Erro na requisição:', error);
+    alert(error.message);
   }
-
-  // Extrai o JSON retornado pelo servidor
-  const dadosResposta = await response.json();
-  console.log('Login realizado com sucesso:', dadosResposta);
-
-} catch (error) {
-  console.error('Erro na requisição:', error);
-}
+} // <--- Esta chave fechando a função resolve o "Unexpected end of input"
