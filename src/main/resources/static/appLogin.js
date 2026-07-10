@@ -32,5 +32,7 @@ async function logar(event) {
   } catch (error) {
     console.error('Erro na requisição:', error);
     alert(error.message);
-  }
-} // <--- Esta chave fechando a função resolve o "Unexpected end of input"
+  } // <-- Fecha o bloco catch
+}   // <-- FILHO DO COBOL: Essa chave fecha a "async function logar()". Faltava ela!   
+
+
