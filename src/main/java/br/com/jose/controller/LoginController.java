@@ -1,14 +1,16 @@
-package com.suaapp.controller; // Ajuste para o pacote correto do seu projeto
-import com.suaapp.dto.LoginDTO; 
-import com.suaapp.model.Usuario; 
-import com.suaapp.repository.UsuarioRepository;
-import com.suaapp.service.BlacklistService;
-import com.suaapp.service.JwtService;
+package br.com.jose.controller;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import br.com.jose.DTO.LoginDTO;
+import br.com.jose.Service.BlacklistService;
+import br.com.jose.model.Usuario;
+import br.com.jose.repository.UsuarioRepository;
+import br.com.jose.security.JwtService;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -78,12 +80,9 @@ public class LoginController {
         return ResponseEntity.ok(response);
     }
 
-     Map<String, String> response = new HashMap<>();
-        response.put("token", token);
-
-        return ResponseEntity.ok(response);
-    }
+    // Map<String, String> response = new HashMap<>();
+    //    response.put("token", token);
+//
+   //     return ResponseEntity.ok(response);
+  //  }
 } // <--- Cer
-
-
-    
