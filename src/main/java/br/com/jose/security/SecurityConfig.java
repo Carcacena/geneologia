@@ -1,4 +1,3 @@
-
 package br.com.jose.security;
 
 import java.util.List;
@@ -74,7 +73,6 @@ CorsConfigurationSource corsConfigurationSource() {
                          .requestMatchers("/api/auth/**", "/public/**").permitAll() // Public routes
                         .requestMatchers(
                                 "/",
-                                "/index.html",
                                 "/login.html",
                                 "/*.html",
                                 "/*.js",
