@@ -139,9 +139,16 @@ button{
 
 <!-- 🔐 LOGIN -->
 <div class="login-box" id="loginBox">
+
+     <form
+        id="formLogin"
+        autocomplete="off"
+        onsubmit="event.preventDefault(); logar();"
    
-    <form id="formLogin" autocomplete="off" onsubmit="event.preventDefault(); logar();">
-        <input type="text" id="login" placeholder="Login" autocomplete="username" required>
+    <form id="formLogin"
+         autocomplete="off"
+         onsubmit="event.preventDefault(); logar();">
+     <!--   <input type="text" id="login" placeholder="Login" autocomplete="username" required>-->
     </form>
 
         <input
