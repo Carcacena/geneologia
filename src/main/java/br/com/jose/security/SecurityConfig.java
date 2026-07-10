@@ -70,7 +70,8 @@ CorsConfigurationSource corsConfigurationSource() {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         .requestMatchers("/auth/**").permitAll()
-
+                                       
+                         .requestMatchers("/api/auth/**", "/public/**").permitAll() // Public routes
                         .requestMatchers(
                                 "/",
                                 "/index.html",
