@@ -141,11 +141,11 @@ function podeAlterar(){ return tipoUsuario <= 1; }
 function podeIncluir(){ return tipoUsuario <= 1; }
 function podeExcluir(){ return tipoUsuario === 0; }
 
-window.onload = async () => {
-    painel = document.getElementById('painel');
+window.addEventListener('load', async () => {
+    const painel = document.getElementById('painel');
     ativarDragPainel();
     await carregar();
-};
+});
 
 function ativarDragPainel(){
     let drag=false, offsetX=0, offsetY=0;
