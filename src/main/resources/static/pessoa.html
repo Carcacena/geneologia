@@ -361,26 +361,23 @@ function abrirModalExcluir(){
     document.getElementById('modal-excluir').style.display='block';
     document.getElementById('overlay').style.display='block';
 }
-async function confirmarIncluir(){
+async function confirmarIncluir() {
 
-    let nome =
-        document.getElementById('incluirNome').value.trim();
+    let nome = document.getElementById('incluirNome').value.trim();
 
-    if(!nome) return;
-	    localStorage.getItem("token")
-).token;
+    if (!nome) return;
+	
+    const token = localStorage.getItem("token");
 
-	const token = localStorage.getItem("token");
-
-    try{
+    try {
 
         const resp = await fetch('/pessoas', {
 
-            method:'POST',
+            method: 'POST',
 
-            headers:{
-                'Content-Type':'application/json',
-                'Authorization':'Bearer ' + token
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
             },
 
             body: JSON.stringify({
@@ -390,12 +387,9 @@ async function confirmarIncluir(){
             })
         });
 
-        if(!resp.ok){
-
+        if (!resp.ok) {
             console.log(resp.status);
-
             alert("Erro ao incluir");
-
             return;
         }
 
@@ -403,10 +397,8 @@ async function confirmarIncluir(){
 
         await carregar();
 
-    }catch(e){
-
+    } catch (e) {
         console.error(e);
-
         alert("Erro ao incluir");
     }
 }
