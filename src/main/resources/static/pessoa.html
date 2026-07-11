@@ -42,7 +42,7 @@ li { margin:4px 0; position:relative; }
     overflow:auto;
 }
 .overlay {
-    display:none;
+    display:none;F
     position:fixed;
     top:0; left:0;
     width:100%; height:100%;
@@ -367,10 +367,10 @@ async function confirmarIncluir(){
         document.getElementById('incluirNome').value.trim();
 
     if(!nome) return;
+	    localStorage.getItem("token")
+).token;
 
-    const token = JSON.parse(
-        localStorage.getItem("token")
-		).token;
+	const token = localStorage.getItem("token");
 
     try{
 
