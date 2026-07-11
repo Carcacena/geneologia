@@ -164,18 +164,14 @@ function ativarDragPainel(){
 
 async function carregar(){
 
-    const token = JSON.parse(
-        localStorage.getItem("token")
-    ).token;
+    const token = localStorage.getItem("token");
 
     const resp = await fetch('/pessoas', {
 
         headers: {
             "Authorization": "Bearer " + token
         }
-
     });
-
     console.log(resp.status);
 
     pessoas = await resp.json();
