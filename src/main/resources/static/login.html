@@ -137,24 +137,40 @@ button{
     <div id="legenda">Família José</div>
 </div>
 
-<!-- 🔐 LOGIN -->
-<div class="login-box" id="loginBox">
-    
-<div class="login-box" id="loginBox"> 
-    <form id="formLogin" autocomplete="off" onsubmit="event.preventDefault(); logar(event);"> 
-        <input type="text" id="login" placeholder="Login" autocomplete="off" required> 
-        <input type="password" id="senha" placeholder="Senha" autocomplete="new-password" required> 
-        <button type="submit">Entrar</button> 
-    </form>
-    
-    <!-- AJUSTE: Botão Sair fora da tag <form> para evitar acionamentos acidentais -->
-    <button type="button" onclick="logout()" style="background:#f44336; margin-top:6px;">Sair</button> 
-</div>
-
-
 <audio id="viola" loop>
     <source src="/mp3/Recording 205322-052325.mp3" type="audio/mpeg">
 </audio>
+    
+<!-- 🔐 LOGIN -->
+<div class="login-box" id="loginBox">
+ 
+    <form id="formLogin" autocomplete="off" onsubmit="event.preventDefault(); logar(event);" >
+
+        <input
+            type="text"
+            id="login"
+            placeholder="Login"
+            autocomplete="off"
+            required
+        >
+
+        <input
+            type="password"
+            id="senha"
+            placeholder="Senha"
+            autocomplete="new-password"
+            required
+        >
+
+        <button type="submit">
+            Entrar
+        </button>
+
+        <!-- AJUSTE 1: Adicionado type="button" para não submeter o formulário de login ao clicar em Sair -->
+        <button type="button" onclick="logout()" style="background:#f44336; margin-top:6px;">Sair</button>
+    </form>
+
+</div>
 
 <script>
 
