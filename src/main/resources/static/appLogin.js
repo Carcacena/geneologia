@@ -2,7 +2,11 @@ async function logar() {
     const login = document.getElementById("login").value;
 	
     const senha = document.getElementById("senha").value;
-	const response = await fetch(`${API_URL}/auth/login`, {	
+
+    const response = await fetch("http://localhost:8080/auth/login", {
+	//const response = await fetch(`${API_URL}/auth/login`, {	
+	
+
         method: "POST",
 
         headers: {
@@ -32,300 +36,42 @@ async function logar() {
 
 	    alert("Login inválido");
 	}
-}
+	}
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>Sistema Genealogia - Magia Absoluta</title>
+async function logar(event) {
 
-<style>
-footer{
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    text-align: center;
-    background: rgba(0,0,0,0.6);
-    color: #ccc;
-    padding: 8px 0;
-    font-size: 0.8rem;
-}
+    if (event) event.preventDefault();
 
-body{
-    font-family: Arial;
-    margin:0;
-    height:110vh;
-    overflow-x:hidden;
-    color:white;
-    background: url("/mp3/recreio10.jpg") no-repeat center center fixed;
-    background-size: cover;
-}
+    const login = document.getElementById("login").value;
+    const senha = document.getElementById("senha").value;
 
-/* 🔐 LOGIN */
-.login-box{
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    background: rgba(0,0,0,0.65);
-    padding:30px;
-    border-radius:12px;
-    box-shadow:0 0 25px rgba(0,0,0,0.8);
-    text-align:center;
-    width:30%;
-    max-width:120px;
-    backdrop-filter: blur(4px);
-    cursor:move;
-    z-index:5;
-}
+    try {
 
-input{
-    width:100%;
-    padding:8px;
-    margin:6px 0;
-    border:none;
-    border-radius:6px;
-}
+        const API_URL = window.location.origin;
 
-button{
-    width:100%;
-    padding:10px;
-    border:none;
-    border-radius:6px;
-    background:#4CAF50;
-    color:white;
-    font-weight:bold;
-    cursor:pointer;
-}
+        const response = await fetch(`${API_URL}/auth/login`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                login,
+                senha
+            })
+        });
 
-/* 🔦 SPOTLIGHT */
-.spotlight{
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    pointer-events:none;
-}
-
-/* 🧠 SLIDESHOW */
-.foto-frame{
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    width: 260px;
-    height: 260px;
-    z-index: 2;
-}
-
-.foto-frame img{
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 12px;
-    box-shadow: 0 0 12px rgba(0,0,0,0.6);
-    transition: opacity 0.6s ease;
-}
-
-#legenda{
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    padding: 6px;
-    font-size: 13px;
-    text-align: center;
-    background: rgba(0,0,0,0.6);
-    border-radius: 0 0 12px 12px;
-}
-
-/* 📱 MOBILE */
-@media (max-width: 768px){
-    .foto-frame{
-        width: 160px;
-        height: 160px;
-        top: 10px;
-        left: 10px;
-    }
-
-    body::after{
-        content:"";
-        position:fixed;
-        top:0;
-        left:0;
-        width:100%;
-        height:100%;
-        background: rgba(0,0,0,0.35);
-        pointer-events:none;
-    }
-}
-</style>
-</head>
-
-<body>
-
-<div class="spotlight"></div>
-
-<!-- 🧠 SLIDESHOW -->
-<div class="foto-frame">
-    <img id="fotoAtiva" src="/mp3/familiaJose.jpg">
-    <div id="legenda">Família José</div>
-</div>
-
-<!-- 🔐 LOGIN -->
-<div class="login-box" id="loginBox">
- 
-    <form id="formLogin" autocomplete="off" onsubmit="event.preventDefault(); logar(event);" >
-
-        <input
-            type="text"
-            id="login"
-            placeholder="Login"
-            autocomplete="off"
-            required
-        >
-
-        <input
-            type="password"
-            id="senha"
-            placeholder="Senha"
-            autocomplete="new-password"
-            required
-        >
-
-        <button type="submit">
-            Entrar
-        </button>
-
-        <!-- AJUSTE 1: Adicionado type="button" para não submeter o formulário de login ao clicar em Sair -->
-        <button type="button" onclick="logout()" style="background:#f44336; margin-top:6px;">Sair</button>
-    </form>
-
-</div>
-
-
-<audio id="viola" loop>
-    <source src="/mp3/Recording 205322-052325.mp3" type="audio/mpeg">
-</audio>
-
-<script>
-
-/* 🔦 SPOTLIGHT */
-const spotlight = document.querySelector(".spotlight");
-
-const isMobile = window.matchMedia("(max-width: 768px)").matches ||
-                 /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-const raio = isMobile ? 420 : 260;
-const escuro = isMobile ? 0.28 : 0.70;
-
-function atualizarSpot(x, y){
-    spotlight.style.background = `
-        radial-gradient(
-            circle ${raio}px at ${x}px ${y}px,
-            rgba(0,0,0,0) 0px,
-            rgba(0,0,0,0.10) 180px,
-            rgba(0,0,0,${escuro}) 360px,
-            rgba(0,0,0,0.95) 100%
-        )
-    `;
-}
-
-document.addEventListener("mousemove", e => {
-    atualizarSpot(e.clientX, e.clientY);
-});
-
-document.addEventListener("touchmove", e => {
-    const t = e.touches[0];
-    atualizarSpot(t.clientX, t.clientY);
-});
-
-/* 🎬 SLIDESHOW */
-const fotos = [
-    {img:"/mp3/familiaJose.jpg", texto:"Família José"},
-    {img:"/mp3/conceicao.jpg", texto:"Igreja Conceição da Boa Vista "},
-    {img:"/mp3/familiaJose.jpg", texto:"Família José - Origem"},
-    {img:"/mp3/casa01.jpg", texto:"Residência"},
-    {img:"/mp3/casa02.jpg", texto:"Residência"},
-    {img:"/mp3/mariafumaca.jpg", texto:"Maria Fumaça"},
-    {img:"/mp3/nazare.jpg", texto:"Nazareth , Aldemiro Pedrinho"},
-    {img:"/mp3/igreja-recreio.jpg", texto:"Igreja Matriz Recreio"},
-    {img:"/mp3/recreio01.jpg", texto:"Estaça~Ferroviaria"},
-    {img:"/mp3/recreio10.jpg", texto:"Estação Ferroviaria"},
-    {img:"/mp3/luna.jpg", texto:"Luna"}
-];
-
-let i = 0;
-
-function trocar(){
-    const img = document.getElementById("fotoAtiva");
-    const leg = document.getElementById("legenda");
-
-    img.style.opacity = 0;
-
-    setTimeout(() => {
-        i = (i + 1) % fotos.length;
-        img.src = fotos[i].img;
-        leg.innerText = fotos[i].texto;
-        img.style.opacity = 1;
-    }, 400);
-}
-
-setInterval(trocar, 4000);
-
-/* 🎻 áudio */
-window.addEventListener("click", function(){
-    document.getElementById("viola").play();
-},{ once:true });
-
-/* 📦 login drag */
-const box = document.getElementById("loginBox");
-
-let offsetX = 0;
-let offsetY = 0;
-let isDown = false;
-
-box.addEventListener("mousedown", (e)=>{
-    isDown = true;
-    offsetX = e.clientX - box.offsetLeft;
-    offsetY = e.clientY - box.offsetTop;
-    box.style.transform = "none";
-});
-
-document.addEventListener("mouseup", ()=>{
-    isDown = false;
-});
-
-document.addEventListener("mousemove", (e)=>{
-    if(!isDown) return;
-    box.style.left = (e.clientX - offsetX) + "px";
-    box.style.top = (e.clientY - offsetY) + "px";
-});
-
-// AJUSTE 2: Rota corrigida para /auth/logout enviando o token no Header do padrão Bearer exigido pelo seu filtro Java
-function logout() {
-    const token = localStorage.getItem("token");
-    fetch("https://railway.app", { 
-        method: "POST",
-        headers: {
-            "Authorization": token ? (token.startsWith("Bearer ") ? token : "Bearer " + token) : ""
+        if (!response.ok) {
+            throw new Error("Erro ao autenticar. Verifique suas credenciais.");
         }
-    })
-    .finally(() => {
-        localStorage.removeItem("token");
-        window.location.href = "login.html";
-    });
+
+        const dadosResposta = await response.json();
+
+        localStorage.setItem("token", dadosResposta.token);
+
+        window.location.href = "menu.html";
+
+    } catch (error) {
+        console.error(error);
+        alert(error.message);
+    }
 }
-
-</script>
-
-<footer>
-Contato WhatsApp: 41-998959399<br>
-Sistema Genealogia - Perfume Final 🧬
-</footer>
-<script src="appLogin.js"></script>
-
-</body>
-</html>
-
