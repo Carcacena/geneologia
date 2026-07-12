@@ -249,7 +249,22 @@ async function carregar(){
 }
 -->
 	
+async function carregar(){
 
+    const token = localStorage.getItem("token");
+
+    const resp = await fetch('/pessoas', {
+
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    });
+    console.log(resp.status);
+
+    pessoas = await resp.json();
+
+    desenhar();
+}
 function montar(lista, pai=null){
     return lista
         .filter(p=>{
