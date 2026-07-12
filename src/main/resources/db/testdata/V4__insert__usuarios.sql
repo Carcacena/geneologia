@@ -1,2 +1,2 @@
 INSERT INTO `usuario` (`id`, `login`, `senha`, `perfil`, `tipo`) VALUES
-(1, 'jose', '$2a$10$E2UPv7arXmp3q0gHxNxXeOZuY49V9Sg7.nNl3A2n8Hn3Hn3Hn3Hn3', 'adm', 0);
+(1, 'jose', '$2a$10$R5eYlXDMNTmio8SElW/E2.zH53Tbnh/E2O5M2yMtey5cWBmXLmJPi', 'adm', 0);
