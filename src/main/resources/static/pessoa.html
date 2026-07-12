@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -211,28 +210,34 @@ function render(nos, nivel=0){
 
 function desenhar(){
     document.getElementById('arvore').innerHTML = render(montar(pessoas));
-}
-
-function abrirPainel(id, el, ev) {
+}function abrirPainel(id, el, ev) {
   ev.stopPropagation();
   selecionadoId = id;
-  
+
+  // Usa um array com as lógicas e mapeia diretamente para a propriedade style
+  const regrasBotoes = [
+    podeMover(),
+    podeAlterar(),
+    podeIncluir(),
+    podeExcluir()
+  ];
+
   const botoes = painel.querySelectorAll('button');
-  
-  // As aspas foram adicionadas aos seletores e aos valores de display
-  botoes[0].style.display = podeMover() ? 'inline-block' : 'none';
-  botoes[1].style.display = podeAlterar() ? 'inline-block' : 'none';
-  botoes[2].style.display = podeIncluir() ? 'inline-block' : 'none';
-  botoes[3].style.display = podeExcluir() ? 'inline-block' : 'none';
-  
+  botoes.forEach((botao, index) => {
+    botao.style.display = regrasBotoes[index] ? 'inline-block' : 'none';
+  });
+
   painel.style.display = 'block';
-  
-  if (!painel.style.left) {
-    // String 'px' adicionada corretamente no final para definir o valor em pixels
-    painel.style.top = (el.getBoundingClientRect().top + window.scrollY) + 'px';
-    painel.style.left = (el.getBoundingClientRect().left + 30 + window.scrollX) + 'px';
+
+  // Evita calcular a posição se ela já foi definida para evitar quebras
+  if (!painel.style.top && !painel.style.left) {
+    const rect = el.getBoundingClientRect();
+    painel.style.top = `${rect.top + window.scrollY}px`;
+    painel.style.left = `${rect.left + 30 + window.scrollX}px`;
   }
 }
+
+
 
 // MODAIS INCLUIR
 
