@@ -42,7 +42,7 @@ li { margin:4px 0; position:relative; }
     overflow:auto;
 }
 .overlay {
-    display:none;F
+    display:none;
     position:fixed;
     top:0; left:0;
     width:100%; height:100%;
@@ -118,6 +118,8 @@ li { margin:4px 0; position:relative; }
 
 <div class="overlay" id="overlay"></div>
 <div id="judiaFigura">JUDIA</div>
+
+
 <!-- Modal Incluir -->
 <div class="modal" id="modal-incluir">
     <h3>Incluir Pessoa</h3>
@@ -139,45 +141,41 @@ function podeAlterar(){ return tipoUsuario <= 1; }
 function podeIncluir(){ return tipoUsuario <= 1; }
 function podeExcluir(){ return tipoUsuario === 0; }
 
-window.addEventListener('load', async () => {
-    const painel = document.getElementById('painel');
+window.onload = async () => {
+    painel = document.getElementById('painel');
     ativarDragPainel();
     await carregar();
-});
-
+};
 
 function ativarDragPainel(){
-
-    const painel = document.getElementById('painel');
-
-    let drag = false, offsetX = 0, offsetY = 0;
-
-    painel.addEventListener("mousedown", e => {
-        drag = true;
+    let drag=false, offsetX=0, offsetY=0;
+    painel.addEventListener("mousedown", e=>{
+        drag=true;
         offsetX = e.clientX - painel.offsetLeft;
         offsetY = e.clientY - painel.offsetTop;
     });
-
-    document.addEventListener("mousemove", e => {
-        if (!drag) return;
+    document.addEventListener("mousemove", e=>{
+        if(!drag) return;
         painel.style.left = (e.clientX - offsetX) + "px";
         painel.style.top  = (e.clientY - offsetY) + "px";
     });
-
-    document.addEventListener("mouseup", () => {
-        drag = false;
-    });
+    document.addEventListener("mouseup", ()=>{ drag=false; });
 }
+
 async function carregar(){
 
-    const token = localStorage.getItem("token");
+    const token = JSON.parse(
+        localStorage.getItem("token")
+    ).token;
 
     const resp = await fetch('/pessoas', {
 
         headers: {
             "Authorization": "Bearer " + token
         }
+
     });
+
     console.log(resp.status);
 
     pessoas = await resp.json();
@@ -210,47 +208,22 @@ function render(nos, nivel=0){
 
 function desenhar(){
     document.getElementById('arvore').innerHTML = render(montar(pessoas));
-
-	
-function abrirPainel(id, el, ev) {
-  ev.stopPropagation();
-  selecionadoId = id;
-
-  // Tenta buscar por ID, depois por Classe, depois por Nome (ignora maiúsculas/minúsculas)
-  const painelElemento = document.getElementById('painel') || 
-                         document.getElementById('Painel') ||
-                         document.querySelector('.painel') || 
-                         document.querySelector('[name="painel"]');
-  
-  if (!painelElemento) {
-    console.error("Não foi possível encontrar o elemento do painel pelos seletores padrão.");
-    return;
-  }
-
-  const regrasBotoes = [
-    podeMover(),
-    podeAlterar(),
-    podeIncluir(),
-    podeExcluir()
-  ];
-
-  const botoes = painelElemento.querySelectorAll('button');
-  botoes.forEach((botao, index) => {
-    if (botao) {
-      botao.style.display = regrasBotoes[index] ? 'inline-block' : 'none';
-    }
-  });
-
-  painelElemento.style.display = 'block';
-
-  if (!painelElemento.style.top && !painelElemento.style.left) {
-    const rect = el.getBoundingClientRect();
-    painelElemento.style.top = `${rect.top + window.scrollY}px`;
-    painelElemento.style.left = `${rect.left + 30 + window.scrollX}px`;
-  }
 }
 
-
+function abrirPainel(id, el, ev){
+    ev.stopPropagation();
+    selecionadoId = id;
+    const botoes = painel.querySelectorAll("button");
+    botoes[0].style.display = podeMover()   ? "inline-block" : "none";
+    botoes[1].style.display = podeAlterar() ? "inline-block" : "none";
+    botoes[2].style.display = podeIncluir() ? "inline-block" : "none";
+    botoes[3].style.display = podeExcluir() ? "inline-block" : "none";
+    painel.style.display = 'block';
+    if(!painel.style.left){
+        painel.style.top = el.getBoundingClientRect().top + window.scrollY + 'px';
+        painel.style.left = el.getBoundingClientRect().left + 30 + window.scrollX + 'px';
+    }
+}
 
 // MODAIS INCLUIR
 
@@ -392,23 +365,26 @@ function abrirModalExcluir(){
     document.getElementById('modal-excluir').style.display='block';
     document.getElementById('overlay').style.display='block';
 }
-async function confirmarIncluir() {
+async function confirmarIncluir(){
 
-    let nome = document.getElementById('incluirNome').value.trim();
+    let nome =
+        document.getElementById('incluirNome').value.trim();
 
-    if (!nome) return;
-	
-    const token = localStorage.getItem("token");
+    if(!nome) return;
 
-    try {
+    const token = JSON.parse(
+        localStorage.getItem("token")
+		).token;
+
+    try{
 
         const resp = await fetch('/pessoas', {
 
-            method: 'POST',
+            method:'POST',
 
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
+            headers:{
+                'Content-Type':'application/json',
+                'Authorization':'Bearer ' + token
             },
 
             body: JSON.stringify({
@@ -418,9 +394,12 @@ async function confirmarIncluir() {
             })
         });
 
-        if (!resp.ok) {
+        if(!resp.ok){
+
             console.log(resp.status);
+
             alert("Erro ao incluir");
+
             return;
         }
 
@@ -428,8 +407,10 @@ async function confirmarIncluir() {
 
         await carregar();
 
-    } catch (e) {
+    }catch(e){
+
         console.error(e);
+
         alert("Erro ao incluir");
     }
 }
