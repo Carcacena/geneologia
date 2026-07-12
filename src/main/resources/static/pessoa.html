@@ -222,7 +222,8 @@ function desenhar(){
     podeExcluir()
   ];
 
-  const botoes = painel.querySelectorAll('button');
+  //const botoes = painel.querySelectorAll('button');
+  const botoes = window.painel.querySelectorAll('button');	
   botoes.forEach((botao, index) => {
     botao.style.display = regrasBotoes[index] ? 'inline-block' : 'none';
   });
