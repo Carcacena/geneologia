@@ -210,11 +210,23 @@ function render(nos, nivel=0){
 
 function desenhar(){
     document.getElementById('arvore').innerHTML = render(montar(pessoas));
-}function abrirPainel(id, el, ev) {
+
+	
+function abrirPainel(id, el, ev) {
   ev.stopPropagation();
   selecionadoId = id;
 
-  // Usa um array com as lógicas e mapeia diretamente para a propriedade style
+  // Tenta buscar por ID, depois por Classe, depois por Nome (ignora maiúsculas/minúsculas)
+  const painelElemento = document.getElementById('painel') || 
+                         document.getElementById('Painel') ||
+                         document.querySelector('.painel') || 
+                         document.querySelector('[name="painel"]');
+  
+  if (!painelElemento) {
+    console.error("Não foi possível encontrar o elemento do painel pelos seletores padrão.");
+    return;
+  }
+
   const regrasBotoes = [
     podeMover(),
     podeAlterar(),
@@ -222,19 +234,19 @@ function desenhar(){
     podeExcluir()
   ];
 
-  //const botoes = painel.querySelectorAll('button');
-  const botoes = window.painel.querySelectorAll('button');	
+  const botoes = painelElemento.querySelectorAll('button');
   botoes.forEach((botao, index) => {
-    botao.style.display = regrasBotoes[index] ? 'inline-block' : 'none';
+    if (botao) {
+      botao.style.display = regrasBotoes[index] ? 'inline-block' : 'none';
+    }
   });
 
-  painel.style.display = 'block';
+  painelElemento.style.display = 'block';
 
-  // Evita calcular a posição se ela já foi definida para evitar quebras
-  if (!painel.style.top && !painel.style.left) {
+  if (!painelElemento.style.top && !painelElemento.style.left) {
     const rect = el.getBoundingClientRect();
-    painel.style.top = `${rect.top + window.scrollY}px`;
-    painel.style.left = `${rect.left + 30 + window.scrollX}px`;
+    painelElemento.style.top = `${rect.top + window.scrollY}px`;
+    painelElemento.style.left = `${rect.left + 30 + window.scrollX}px`;
   }
 }
 
