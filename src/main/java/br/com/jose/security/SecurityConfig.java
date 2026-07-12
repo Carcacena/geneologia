@@ -1,4 +1,3 @@
-
 package br.com.jose.security;
 
 import java.util.List;
@@ -34,9 +33,7 @@ CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
 
     configuration.setAllowedOrigins(List.of(
-    		"http://localhost:8080/auth/login"
-		
-     //   "https://geneologia-production.up.railway.app"
+        "https://geneologia-production.up.railway.app"
     ));
 
     configuration.setAllowedMethods(List.of(
@@ -76,7 +73,6 @@ CorsConfigurationSource corsConfigurationSource() {
                          .requestMatchers("/api/auth/**", "/public/**").permitAll() // Public routes
                         .requestMatchers(
                                 "/",
-                                "/index.html",
                                 "/login.html",
                                 "/*.html",
                                 "/*.js",
