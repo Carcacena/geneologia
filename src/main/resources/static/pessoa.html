@@ -215,19 +215,25 @@ function desenhar(){
     document.getElementById('arvore').innerHTML = render(montar(pessoas));
 }
 
-function abrirPainel(id, el, ev){
-    ev.stopPropagation();
-    selecionadoId = id;
-    const botoes = painel.querySelectorAll("button");
-    botoes[0].style.display = podeMover()   ? "inline-block" : "none";
-    botoes[1].style.display = podeAlterar() ? "inline-block" : "none";
-    botoes[2].style.display = podeIncluir() ? "inline-block" : "none";
-    botoes[3].style.display = podeExcluir() ? "inline-block" : "none";
-    painel.style.display = 'block';
-    if(!painel.style.left){
-        painel.style.top = el.getBoundingClientRect().top + window.scrollY + 'px';
-        painel.style.left = el.getBoundingClientRect().left + 30 + window.scrollX + 'px';
-    }
+function abrirPainel(id, el, ev) {
+  ev.stopPropagation();
+  selecionadoId = id;
+  
+  const botoes = painel.querySelectorAll('button');
+  
+  // As aspas foram adicionadas aos seletores e aos valores de display
+  botoes[0].style.display = podeMover() ? 'inline-block' : 'none';
+  botoes[1].style.display = podeAlterar() ? 'inline-block' : 'none';
+  botoes[2].style.display = podeIncluir() ? 'inline-block' : 'none';
+  botoes[3].style.display = podeExcluir() ? 'inline-block' : 'none';
+  
+  painel.style.display = 'block';
+  
+  if (!painel.style.left) {
+    // String 'px' adicionada corretamente no final para definir o valor em pixels
+    painel.style.top = (el.getBoundingClientRect().top + window.scrollY) + 'px';
+    painel.style.left = (el.getBoundingClientRect().left + 30 + window.scrollX) + 'px';
+  }
 }
 
 // MODAIS INCLUIR
