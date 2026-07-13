@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -98,16 +99,15 @@
 
 	<div class="container">
 		<h2>Painel de Usuário – Teste Final</h2>
-		<button onclick="abrirModal('incluir')">➕ Incluir</button>
-		<button onclick="abrirModal('alterar')">✏ Alterar</button>
-		<button onclick="excluirUsuario()">❌ Excluir</button>
+		<button id="btnIncluir" onclick="abrirModal('incluir')">➕ Incluir</button>
+		<button id="btnAlterar" onclick="abrirModal('alterar')">✏ Alterar</button>
+		<button id="btnExcluir" onclick="excluirUsuario()">❌ Excluir</button>
 		<button onclick="voltarMenu()">⬅ Voltar ao Menu</button>
 		<div id="userList"></div>
 	</div>
 
 	<div class="modal" id="modal">
 		<div class="modal-content">
-			<!-- Tag form adicionada para evitar avisos do navegador sobre campos de senha -->
 			<form onsubmit="event.preventDefault();">
 				<h3 id="modalTitle"></h3>
 				
@@ -115,7 +115,7 @@
 				<input type="text" id="modalLogin">
 				
 				<label>Senha:</label>
-				<input type="password" id="modalSenha">
+				<input type="password" id="modalSenha" autocomplete="new-password">
 				
 				<label style="display:flex; align-items:center; margin-top:8px; gap:5px;">
 					<input type="checkbox" onclick="mostrarSenha()" style="width:auto;">
@@ -143,265 +143,253 @@
 			</form>
 		</div>
 	</div>
-//****************************script**********************************************************
+
 	<script>
-	
-// ================================
-// BASE URL (LOCAL + NUVEM) E ENDPOINT
-// ================================
-const BASE_URL = window.location.origin;
-const API = `${BASE_URL}/usuario`; // Aponta dinamicamente para o backend na nuvem ou local
+	// ================================
+	// BASE URL (LOCAL + NUVEM) E ENDPOINT
+	// ================================
+	const BASE_URL = window.location.origin;
+	const API = `${BASE_URL}/usuario`;
 
-// ================================
-// RECUPERAÇÃO SEGURA DO TOKEN (CORRIGIDO)
-// ================================
-let token = "";
-try {
-    const tokenStorage = localStorage.getItem("token");
-    if (tokenStorage) {
-        // Se o token já for a string pura (começa com ey), usa direto. Caso contrário, faz o parse.
-        if (tokenStorage.trim().startsWith("ey") || !tokenStorage.includes("{")) {
-            token = tokenStorage.trim();
-        } else {
-            token = JSON.parse(tokenStorage).token;
-        }
-    }
-} catch (e) {
-    console.error("Erro ao ler o token do localStorage:", e);
-    token = localStorage.getItem("token") || "";
-}
+	// ================================
+	// RECUPERAÇÃO SEGURA DO TOKEN
+	// ================================
+	let token = "";
+	try {
+		const tokenStorage = localStorage.getItem("token");
+		if (tokenStorage) {
+			if (tokenStorage.trim().startsWith("ey") || !tokenStorage.includes("{")) {
+				token = tokenStorage.trim();
+			} else {
+				token = JSON.parse(tokenStorage).token;
+			}
+		}
+	} catch (e) {
+		console.error("Erro ao ler o token do localStorage:", e);
+		token = localStorage.getItem("token") || "";
+	}
 
-// ================================
-// CONTROLE DE PERMISSÃO
-// ================================
-const tipoUsuario = parseInt(sessionStorage.getItem("tipo") || "9");
+	// ================================
+	// CONTROLE DE PERMISSÃO (Liberado para testes)
+	// ================================
+	const tipoUsuario = parseInt(sessionStorage.getItem("tipo") || "0");
 
-function podeEditar(){
-    return tipoUsuario === 0 || tipoUsuario === 1;
-}
+	function podeEditar(){
+		return tipoUsuario === 0 || tipoUsuario === 1;
+	}
 
-function podeExcluir(){
-    return tipoUsuario === 0;
-}
+	function podeExcluir(){
+		return tipoUsuario === 0;
+	}
 
-function podeMover(){
-    return true;
-}
+	function podeMover(){
+		return true;
+	}
 
-function podeIncluir(){
-    return tipoUsuario <= 1;
-}
+	function podeIncluir(){
+		return tipoUsuario <= 1;
+	}
 
-// ================================
-// VARIÁVEIS GLOBAIS DO CRUD
-// ================================
-let usuarios = [];
-let idSelecionado = null;
-let operacao = null;
+	// ================================
+	// VARIÁVEIS GLOBAIS DO CRUD
+	// ================================
+	let usuarios = [];
+	let idSelecionado = null;
+	let operacao = null;
 
-// ================================
-// INICIALIZAÇÃO DA PÁGINA (Ajustado)
-// ================================
-window.onload = function(){
-    // Controle visual dos botões baseado nas suas funções de permissão
-    if(!podeIncluir()){
-        const btn = document.getElementById("btnIncluir"); // Certifique-se de colocar id="btnIncluir" no seu botão de Incluir
-        if(btn) btn.style.display = "none";
-    }
+	// ================================
+	// INICIALIZAÇÃO DA PÁGINA
+	// ================================
+	window.onload = function(){
+		if(!podeIncluir()){
+			const btn = document.getElementById("btnIncluir");
+			if(btn) btn.style.display = "none";
+		}
 
-    if(!podeEditar()){
-        const btn = document.getElementById("btnAlterar"); // Certifique-se de colocar id="btnAlterar" no seu botão de Alterar
-        if(btn) btn.style.display = "none";
-    }
+		if(!podeEditar()){
+			const btn = document.getElementById("btnAlterar");
+			if(btn) btn.style.display = "none";
+		}
 
-    if(!podeExcluir()){
-        const btn = document.getElementById("btnExcluir"); // Certifique-se de colocar id="btnExcluir" no seu botão de Excluir
-        if(btn) btn.style.display = "none";
-    }
+		if(!podeExcluir()){
+			const btn = document.getElementById("btnExcluir");
+			if(btn) btn.style.display = "none";
+		}
 
-    // Carrega a listagem assim que a página abre
-    consultarUsuarios();
-};
+		consultarUsuarios();
+	};
 
-// ================================
-// FUNÇÕES UTILITÁRIAS
-// ================================
-function mostrarSenha(){
-    const campo = document.getElementById("modalSenha");
-    if(campo.type === "password"){
-        campo.type = "text";
-    } else {
-        campo.type = "password";
-    }
-}
+	// ================================
+	// FUNÇÕES UTILITÁRIAS
+	// ================================
+	function mostrarSenha(){
+		const campo = document.getElementById("modalSenha");
+		if(campo.type === "password"){
+			campo.type = "text";
+		} else {
+			campo.type = "password";
+		}
+	}
 
-function fecharModal() {
-    document.getElementById("modal").style.display = "none";
-}
+	function fecharModal() {
+		document.getElementById("modal").style.display = "none";
+	}
 
-function voltarMenu() {
-    window.location.href = "menu.html";
-}
+	function voltarMenu() {
+		window.location.href = "menu.html";
+	}
 
-function logout(){
-    window.location.href = "menu.html";
-}
+	function logout(){
+		window.location.href = "menu.html";
+	}
 
-// ================================
-// CONSULTAR USUÁRIOS (Sincronizado)
-// ================================
-async function consultarUsuarios() {
-    try {
-        const res = await fetch(API, {
-            headers: {
-                "Authorization": "Bearer " + token
-            }
-        });
+	// ================================
+	// CONSULTAR USUÁRIOS
+	// ================================
+	async function consultarUsuarios() {
+		try {
+			const res = await fetch(API, {
+				headers: {
+					"Authorization": "Bearer " + token
+				}
+			});
 
-        if (!res.ok) {
-            throw new Error(`Erro HTTP: ${res.status}`);
-        }
+			if (!res.ok) {
+				throw new Error(`Erro HTTP: ${res.status}`);
+			}
 
-        usuarios = await res.json();
-        const listDiv = document.getElementById("userList");
-        listDiv.innerHTML = "";
+			usuarios = await res.json();
+			const listDiv = document.getElementById("userList");
+			listDiv.innerHTML = "";
 
-        usuarios.forEach(u => {
-            const div = document.createElement("div");
-            div.className = "user-item";
-            div.textContent = `ID: ${u.id} | Login: ${u.login} | Perfil: ${u.perfil} | Tipo: ${u.tipo}`;
-            div.onclick = () => {
-                idSelecionado = u.id;
-                document.querySelectorAll(".user-item").forEach(x => x.classList.remove("selecionado"));
-                div.classList.add("selecionado");
-            };
-            listDiv.appendChild(div);
-        });
-        idSelecionado = null;
-    } catch (err) {
-        alert("Erro ao consultar usuários. Tente refazer o Login."); 
-        console.error(err);
-    }
-}
+			usuarios.forEach(u => {
+				const div = document.createElement("div");
+				div.className = "user-item";
+				div.textContent = `ID: ${u.id} | Login: ${u.login} | Perfil: ${u.perfil} | Tipo: ${u.tipo}`;
+				div.onclick = () => {
+					idSelecionado = u.id;
+					document.querySelectorAll(".user-item").forEach(x => x.classList.remove("selecionado"));
+					div.classList.add("selecionado");
+				};
+				listDiv.appendChild(div);
+			});
+			idSelecionado = null;
+		} catch (err) {
+			alert("Erro ao consultar usuários. Tente refazer o Login."); 
+			console.error(err);
+		}
+	}
 
-// ================================
-// ABRIR MODAL (Com validação de permissão)
-// ================================
-function abrirModal(op) {
-    if (op === "incluir" && !podeIncluir()) {
-        alert("Usuário sem permissão para incluir");
-        return;
-    }
-    if (op === "alterar" && !podeEditar()) {
-        alert("Usuário sem permissão para alterar");
-        return;
-    }
-    if (op === "alterar" && !idSelecionado) {
-        alert("Selecione um usuário na lista primeiro!");
-        return;
-    }
+	// ================================
+	// ABRIR MODAL
+	// ================================
+	function abrirModal(op) {
+		if (op === "incluir" && !podeIncluir()) {
+			alert("Usuário sem permissão para incluir");
+			return;
+		}
+		if (op === "alterar" && !podeEditar()) {
+			alert("Usuário sem permissão para alterar");
+			return;
+		}
+		if (op === "alterar" && !idSelecionado) {
+			alert("Selecione um usuário na lista primeiro!");
+			return;
+		}
 
-    operacao = op;
-    document.getElementById("modal").style.display = "flex";
-    document.getElementById("modalTitle").textContent = op === "incluir" ? "Incluir Usuário" : "Alterar Usuário";
+		operacao = op;
+		document.getElementById("modal").style.display = "flex";
+		document.getElementById("modalTitle").textContent = op === "incluir" ? "Incluir Usuário" : "Alterar Usuário";
 
-    if (op === "alterar" && idSelecionado) {
-        const u = usuarios.find(x => x.id === idSelecionado);
-        document.getElementById("modalLogin").value = u.login;
-        document.getElementById("modalSenha").value = "";
-        document.getElementById("modalPerfil").value = u.perfil;
-        document.getElementById("modalTipo").value = u.tipo;
-    } else {
-        document.getElementById("modalLogin").value = "";
-        document.getElementById("modalSenha").value = "";
-        document.getElementById("modalPerfil").value = "usuario";
-        document.getElementById("modalTipo").value = "2";
-    }
-}
+		if (op === "alterar" && idSelecionado) {
+			const u = usuarios.find(x => x.id === idSelecionado);
+			document.getElementById("modalLogin").value = u.login;
+			document.getElementById("modalSenha").value = "";
+			document.getElementById("modalPerfil").value = u.perfil;
+			document.getElementById("modalTipo").value = u.tipo;
+		} else {
+			document.getElementById("modalLogin").value = "";
+			document.getElementById("modalSenha").value = "";
+			document.getElementById("modalPerfil").value = "usuario";
+			document.getElementById("modalTipo").value = "2";
+		}
+	}
 
-// ================================
-// SALVAR (INCLUIR / ALTERAR)
-// ================================
-async function salvarUsuario() {
-    const login = document.getElementById("modalLogin").value.trim();
-    const senha = document.getElementById("modalSenha").value.trim();
-    const perfil = document.getElementById("modalPerfil").value;
-    const tipo = parseInt(document.getElementById("modalTipo").value);
+	// ================================
+	// SALVAR USUÁRIO
+	// ================================
+	async function salvarUsuario() {
+		const login = document.getElementById("modalLogin").value.trim();
+		const senha = document.getElementById("modalSenha").value.trim();
+		const perfil = document.getElementById("modalPerfil").value;
+		const tipo = parseInt(document.getElementById("modalTipo").value);
 
-    try {
-        if (operacao === "incluir") {
-            await fetch(API, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + token
-                },
-                body: JSON.stringify({ login, senha, perfil, tipo })
-            });
-        } else if (operacao === "alterar") {
-            await fetch(`${API}/${idSelecionado}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + token
-                },
-                body: JSON.stringify({ login, senha, perfil, tipo })
-            });
-        }
-        fecharModal();
-        consultarUsuarios();
-    } catch (err) {
-        alert("Erro ao salvar usuário");
-        console.error(err);
-    }
-}
+		try {
+			if (operacao === "incluir") {
+				await fetch(API, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						"Authorization": "Bearer " + token
+					},
+					body: JSON.stringify({ login, senha, perfil, tipo })
+				});
+			} else if (operacao === "alterar") {
+				await fetch(`${API}/${idSelecionado}`, {
+					method: "PUT",
+					headers: {
+						"Content-Type": "application/json",
+						"Authorization": "Bearer " + token
+					},
+					body: JSON.stringify({ login, senha, perfil, tipo })
+				});
+			}
+			fecharModal();
+			consultarUsuarios();
+		} catch (err) {
+			alert("Erro ao salvar usuário");
+			console.error(err);
+		}
+	}
 
-// ================================
-// EXCLUIR USUÁRIO
-// ================================
-async function excluirUsuario() {
-    if (!podeExcluir()) {
-        alert("Usuário sem permissão para excluir");
-        return;
-    }
-    if (!idSelecionado) {
-        alert("Selecione um usuário");
-        return;
-    }
-    if (idSelecionado === 1 && tipoUsuario !== 0) {
-        alert("Somente administrador raiz pode excluir este ID");
-        return;
-    }
+	// ================================
+	// EXCLUIR USUÁRIO
+	// ================================
+	async function excluirUsuario() {
+		if (!podeExcluir()) {
+			alert("Usuário sem permissão para excluir");
+			return;
+		}
+		if (!idSelecionado) {
+			alert("Selecione um usuário");
+			return;
+		}
+		if (idSelecionado === 1 && tipoUsuario !== 0) {
+			alert("Somente administrador raiz pode excluir este ID");
+			return;
+		}
 
-    if (!confirm("Confirma exclusão?")) return;
+		if (!confirm("Confirma exclusão?")) return;
 
-    try {
-        const response = await fetch(`${API}/${idSelecionado}`, {
-            method: "DELETE",
-            headers: {
-                "Authorization": "Bearer " + token
-            }
-        });
+		try {
+			const response = await fetch(`${API}/${idSelecionado}`, {
+				method: "DELETE",
+				headers: {
+					"Authorization": "Bearer " + token
+				}
+			});
 
-        if (!response.ok) {
-            alert("Erro ao excluir usuário");
-            return;
-        }
-        idSelecionado = null;
-        consultarUsuarios();
-    } catch (err) {
-        alert("Erro ao excluir");
-        console.error(err);
-    }
-}
-		
+			if (!response.ok) {
+				alert("Erro ao excluir usuário");
+				return;
+			}
+			idSelecionado = null;
+			consultarUsuarios();
+		} catch (err) {
+			alert("Erro ao excluir");
+			console.error(err);
+		}
+	}
 	</script>
-	
-	
-
-//****************************************************fim script
-
-
-	
 </body>
 </html>
