@@ -174,27 +174,42 @@ function ativarDragPainel() {
         drag = false;
     });
 }
-async function carregar(){
 
-    const token = JSON.parse(
-        localStorage.getItem("token")
-    ).token;
+	async function carregar() {
+    try {
+        // 1. Evita quebra se o 'token' não existir no localStorage
+        const tokenData = localStorage.getItem("token");
+        if (!tokenData) {
+            console.error("Token não encontrado no localStorage");
+            return;
+        }
+        
+        const token = JSON.parse(tokenData).token;
 
-    const resp = await fetch('/pessoas', {
+        const resp = await fetch('/pessoas', {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        });
 
-        headers: {
-            "Authorization": "Bearer " + token
+        console.log("Status da resposta:", resp.status);
+
+        // 2. Trata erros de requisição (Ex: 401 Não Autorizado, 404 Não Encontrado)
+        if (!resp.ok) {
+            throw new Error(`Erro na requisição: ${resp.status}`);
         }
 
-    });
+        // 3. Garante que 'pessoas' seja declarada adequadamente (use window.pessoas se for global)
+        window.pessoas = await resp.json();
 
-    console.log(resp.status);
-
-    pessoas = await resp.json();
-
-    desenhar();
+        desenhar();
+        
+    } catch (erro) {
+        console.error("Erro ao carregar dados:", erro);
+        // Exibe um alerta visual simples para não deixar a tela totalmente branca
+        document.body.innerHTML = `<h3>Erro ao carregar dados. Por favor, tente novamente.</h3>`;
+    }
 }
-	
 function montar(lista, pai=null){
     return lista
         .filter(p=>{
