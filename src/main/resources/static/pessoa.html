@@ -178,8 +178,11 @@ async function carregar() {
             console.error("Token não encontrado no localStorage");
             return;
         }
-        
-        const token = JSON.parse(tokenLocalStorage).token;
+        const token = JSON.parse(
+        localStorage.getItem("token")
+  		  ).token;
+
+      //  const token = JSON.parse(tokenLocalStorage).token;
 
         // Faz a requisição HTTP
         const resp = await fetch('/pessoas', {
