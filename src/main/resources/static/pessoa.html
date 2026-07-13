@@ -270,10 +270,6 @@ function render(nos, nivel=0){
     return html;
 }
 
-function desenhar(){
-    document.getElementById('arvore').innerHTML = render(montar(pessoas));
-}
-
 function abrirPainel(id, el, ev){
     ev.stopPropagation();
     selecionadoId = id;
