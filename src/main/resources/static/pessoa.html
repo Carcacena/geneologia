@@ -170,25 +170,40 @@ function ativarDragPainel() {
         drag = false;
     });
 }
-async function carregar(){
+async function carregar() {
+    try {
+        // Busca o token com segurança
+        const tokenLocalStorage = localStorage.getItem("token");
+        if (!tokenLocalStorage) {
+            console.error("Token não encontrado no localStorage");
+            return;
+        }
+        
+        const token = JSON.parse(tokenLocalStorage).token;
 
-    const token = JSON.parse(
-        localStorage.getItem("token")
-    ).token;
+        // Faz a requisição HTTP
+        const resp = await fetch('/pessoas', {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        });
 
-    const resp = await fetch('/pessoas', {
+        console.log("Status da resposta:", resp.status);
 
-        headers: {
-            "Authorization": "Bearer " + token
+        // Verifica se a resposta foi bem-sucedida (status 200-299)
+        if (!resp.oficial && !resp.ok) {
+            throw new Error(`Erro na requisição: ${resp.status}`);
         }
 
-    });
+        // Declara a variável localmente ou atualiza a global corretamente
+        const pessoas = await resp.json();
 
-    console.log(resp.status);
+        // Passa os dados diretamente para a função desenhar
+        desenhar(pessoas);
 
-    pessoas = await resp.json();
-
-    desenhar();
+    } catch (erro) {
+        console.error("Erro ao carregar ou desenhar os dados:", erro);
+    }
 }
 function montar(lista, pai=null){
     return lista
