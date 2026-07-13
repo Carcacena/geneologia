@@ -1,6 +1,6 @@
 async function logar() {
     const login = document.getElementById("login").value;
-	
+	const token = localStorage.getItem("token");
     const senha = document.getElementById("senha").value;
 
    // const response = await fetch("http://localhost:8080/auth/login", {
