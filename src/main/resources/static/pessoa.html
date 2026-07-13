@@ -206,7 +206,31 @@ async function carregar() {
     }
 }
 
+function desenhar(){
+    try {
+        // 1. Verifica se o elemento HTML realmente existe na tela
+        const elementoArvore = document.getElementById('arvore');
+        if (!elementoArvore) {
+            throw new Error("O elemento HTML com id='arvore' não foi encontrado na página.");
+        }
 
+        // 2. Verifica se a variável pessoas contém dados válidos
+        console.log("Dados recebidos em pessoas:", pessoas);
+
+        // 3. Executa as funções passo a passo para ver qual delas falha
+        const dadosMontados = montar(pessoas);
+        console.log("Resultado da função montar():", dadosMontados);
+
+        const htmlGerado = render(dadosMontados);
+        console.log("Resultado da função render():", htmlGerado);
+
+        // 4. Aplica o HTML na tela
+        elementoArvore.innerHTML = htmlGerado;
+
+    } catch (erro) {
+        console.error("Erro específico dentro da função desenhar():", erro);
+    }
+}
 
 
 
