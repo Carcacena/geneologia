@@ -142,10 +142,21 @@ function podeIncluir(){ return tipoUsuario <= 1; }
 function podeExcluir(){ return tipoUsuario === 0; }
 
 window.onload = async () => {
-    painel = document.getElementById('painel');
-    ativarDragPainel();
+    // 1. Declarando a variável localmente
+    const painel = document.getElementById('painel');
+    
+    // 2. Proteção contra elemento nulo
+    if (!painel) {
+        console.error("Erro: O elemento #painel não foi encontrado no HTML.");
+        return;
+    }
+    
+    // 3. Execução das funções
+    ativarDragPainel(painel); // É recomendável passar o painel como argumento
     await carregar();
 };
+	
+
 
 
 function ativarDragPainel() {
