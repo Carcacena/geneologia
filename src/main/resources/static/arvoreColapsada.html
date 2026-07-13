@@ -222,27 +222,41 @@ function ativarDragPainel(){
     });
     document.addEventListener("mouseup", ()=>{ drag=false; });
 }
-async function carregar(){
-
-    const token = JSON.parse(
-        localStorage.getItem("token")
-    ).token;
-
-    const resp = await fetch('/pessoas', {
-
-        headers: {
-            "Authorization": "Bearer " + token
+async function carregar() {
+    try {
+        // 1. Evita que o app quebre se o token não existir no localStorage
+        const tokenString = localStorage.getItem("token");
+        if (!tokenString) {
+            console.error("Token não encontrado no localStorage");
+            return;
         }
 
-    });
+        const token = JSON.parse(tokenString).token;
 
-    console.log(resp.status);
+        // 2. Ajuste da URL para produção (Railway)
+        // Se o seu frontend e backend estão no mesmo projeto do Railway, use '/'
+        // Se estão em projetos/URLs separadas, mude para: 'https://railway.app'
+        const url = '/pessoas'; 
 
-    pessoas = await resp.json();
+        const resp = await fetch(url, {
+            method: 'GET',
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            }
+        });
 
-    desenhar();
+        if (!resp.ok) {
+            throw new Error(`Erro na requisição: ${resp.status}`);
+        }
+
+        const dados = await resp.json();
+        console.log(dados);
+        
+    } catch (erro) {
+        console.error("Erro ao carregar dados:", erro);
+    }
 }
-
 
 function montar(lista, pai=null){
     return lista
