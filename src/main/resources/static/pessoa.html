@@ -147,21 +147,29 @@ window.onload = async () => {
     await carregar();
 };
 
-function ativarDragPainel(){
-    let drag=false, offsetX=0, offsetY=0;
-    painel.addEventListener("mousedown", e=>{
-        drag=true;
+
+function ativarDragPainel() {
+
+    const painel = document.getElementById('painel');
+
+    let drag = false, offsetX = 0, offsetY = 0;
+
+    painel.addEventListener("mousedown", e => {
+        drag = true;
         offsetX = e.clientX - painel.offsetLeft;
         offsetY = e.clientY - painel.offsetTop;
     });
-    document.addEventListener("mousemove", e=>{
-        if(!drag) return;
+
+    document.addEventListener("mousemove", e => {
+        if (!drag) return;
         painel.style.left = (e.clientX - offsetX) + "px";
         painel.style.top  = (e.clientY - offsetY) + "px";
     });
-    document.addEventListener("mouseup", ()=>{ drag=false; });
-}
 
+    document.addEventListener("mouseup", () => {
+        drag = false;
+    });
+}
 async function carregar(){
 
     const token = JSON.parse(
