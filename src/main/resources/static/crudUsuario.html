@@ -143,170 +143,265 @@
 			</form>
 		</div>
 	</div>
-
+//****************************script**********************************************************
 	<script>
-		// Configuração de URL única da API para o CRUD de Usuários
-		// Alterne comentando/descomentando a linha dependendo de onde está testando:
-		// const API = "http://localhost:8080/usuario"; 
-		const API = "https://railway.app";
+	
+// ================================
+// BASE URL (LOCAL + NUVEM) E ENDPOINT
+// ================================
+const BASE_URL = window.location.origin;
+const API = `${BASE_URL}/usuario`; // Aponta dinamicamente para o backend na nuvem ou local
 
-		// Recuperação segura do Token de autenticação
-		let token = "";
-		try {
-			const tokenStorage = localStorage.getItem("token");
-			if (tokenStorage) {
-				token = JSON.parse(tokenStorage).token;
-			}
-		} catch (e) {
-			console.error("Erro ao ler o token do localStorage", e);
-		}
+// ================================
+// RECUPERAÇÃO SEGURA DO TOKEN (CORRIGIDO)
+// ================================
+let token = "";
+try {
+    const tokenStorage = localStorage.getItem("token");
+    if (tokenStorage) {
+        // Se o token já for a string pura (começa com ey), usa direto. Caso contrário, faz o parse.
+        if (tokenStorage.trim().startsWith("ey") || !tokenStorage.includes("{")) {
+            token = tokenStorage.trim();
+        } else {
+            token = JSON.parse(tokenStorage).token;
+        }
+    }
+} catch (e) {
+    console.error("Erro ao ler o token do localStorage:", e);
+    token = localStorage.getItem("token") || "";
+}
 
-		let usuarios = [];
-		let idSelecionado = null;
-		let operacao = null;
+// ================================
+// CONTROLE DE PERMISSÃO
+// ================================
+const tipoUsuario = parseInt(sessionStorage.getItem("tipo") || "9");
 
-		function mostrarSenha() {
-			const campo = document.getElementById("modalSenha");
-			if (campo.type === "password") {
-				campo.type = "text";
-			} else {
-				campo.type = "password";
-			}
-		}
+function podeEditar(){
+    return tipoUsuario === 0 || tipoUsuario === 1;
+}
 
-		async function consultarUsuarios() {
-			try {
-				const res = await fetch(API, {
-					headers: {
-						"Authorization": "Bearer " + token
-					}
-				});
+function podeExcluir(){
+    return tipoUsuario === 0;
+}
 
-				usuarios = await res.json();
-				const listDiv = document.getElementById("userList");
-				listDiv.innerHTML = "";
-				
-				usuarios.forEach(u => {
-					const div = document.createElement("div");
-					div.className = "user-item";
-					div.textContent = `ID: ${u.id} | Login: ${u.login} | Perfil: ${u.perfil} | Tipo: ${u.tipo}`;
-					div.onclick = () => {
-						idSelecionado = u.id;
-						document.querySelectorAll(".user-item").forEach(x => x.classList.remove("selecionado"));
-						div.classList.add("selecionado");
-					};
-					listDiv.appendChild(div);
-				});
-				idSelecionado = null;
-			} catch (err) {
-				alert("Erro ao consultar usuários"); 
-				console.error(err);
-			}
-		}
+function podeMover(){
+    return true;
+}
 
-		function abrirModal(op) {
-			if (op === "alterar" && !idSelecionado) {
-				alert("Selecione um usuário na lista primeiro!");
-				return;
-			}
+function podeIncluir(){
+    return tipoUsuario <= 1;
+}
 
-			operacao = op;
-			document.getElementById("modal").style.display = "flex";
-			document.getElementById("modalTitle").textContent = op === "incluir" ? "Incluir Usuário" : "Alterar Usuário";
-			
-			if (op === "alterar" && idSelecionado) {
-				const u = usuarios.find(x => x.id === idSelecionado);
-				document.getElementById("modalLogin").value = u.login;
-				document.getElementById("modalSenha").value = "";
-				document.getElementById("modalPerfil").value = u.perfil;
-				document.getElementById("modalTipo").value = u.tipo;
-			} else {
-				document.getElementById("modalLogin").value = "";
-				document.getElementById("modalSenha").value = "";
-				document.getElementById("modalPerfil").value = "usuario";
-				document.getElementById("modalTipo").value = "2";
-			}
-		}
+// ================================
+// VARIÁVEIS GLOBAIS DO CRUD
+// ================================
+let usuarios = [];
+let idSelecionado = null;
+let operacao = null;
 
-		function fecharModal() {
-			document.getElementById("modal").style.display = "none";
-		}
+// ================================
+// INICIALIZAÇÃO DA PÁGINA (Ajustado)
+// ================================
+window.onload = function(){
+    // Controle visual dos botões baseado nas suas funções de permissão
+    if(!podeIncluir()){
+        const btn = document.getElementById("btnIncluir"); // Certifique-se de colocar id="btnIncluir" no seu botão de Incluir
+        if(btn) btn.style.display = "none";
+    }
 
-		async function salvarUsuario() {
-			const login = document.getElementById("modalLogin").value.trim();
-			const senha = document.getElementById("modalSenha").value.trim();
-			const perfil = document.getElementById("modalPerfil").value;
-			const tipo = parseInt(document.getElementById("modalTipo").value);
+    if(!podeEditar()){
+        const btn = document.getElementById("btnAlterar"); // Certifique-se de colocar id="btnAlterar" no seu botão de Alterar
+        if(btn) btn.style.display = "none";
+    }
 
-			try {
-				if (operacao === "incluir") {
-					await fetch(API, {
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-							"Authorization": "Bearer " + token
-						},
-						body: JSON.stringify({ login, senha, perfil, tipo })
-					});
-				} else if (operacao === "alterar") {
-					if (!idSelecionado && usuarios.length > 0) {
-						idSelecionado = usuarios[0].id;
-					}
+    if(!podeExcluir()){
+        const btn = document.getElementById("btnExcluir"); // Certifique-se de colocar id="btnExcluir" no seu botão de Excluir
+        if(btn) btn.style.display = "none";
+    }
 
-					await fetch(`${API}/${idSelecionado}`, {
-						method: "PUT",
-						headers: {
-							"Content-Type": "application/json",
-							"Authorization": "Bearer " + token
-						},
-						body: JSON.stringify({ login, senha, perfil, tipo })
-					});
-				}
-				fecharModal();
-				consultarUsuarios();
-			} catch (err) {
-				alert("Erro ao salvar usuário");
-				console.error(err);
-			}
-		}
+    // Carrega a listagem assim que a página abre
+    consultarUsuarios();
+};
 
-		async function excluirUsuario() {
-			if (!idSelecionado) {
-				alert("Selecione um usuário");
-				return;
-			}
+// ================================
+// FUNÇÕES UTILITÁRIAS
+// ================================
+function mostrarSenha(){
+    const campo = document.getElementById("modalSenha");
+    if(campo.type === "password"){
+        campo.type = "text";
+    } else {
+        campo.type = "password";
+    }
+}
 
-			if (!confirm("Confirma exclusão?")) return;
+function fecharModal() {
+    document.getElementById("modal").style.display = "none";
+}
 
-			try {
-				const response = await fetch(`${API}/${idSelecionado}`, {
-					method: "DELETE",
-					headers: {
-						"Authorization": "Bearer " + token
-					}
-				});
+function voltarMenu() {
+    window.location.href = "menu.html";
+}
 
-				if (!response.ok) {
-					alert("Erro ao excluir usuário");
-					return;
-				}
-				idSelecionado = null;
-				consultarUsuarios();
-			} catch (err) {
-				alert("Erro ao excluir");
-				console.error(err);
-			}
-		}
+function logout(){
+    window.location.href = "menu.html";
+}
 
-		function voltarMenu() {
-			window.location.href = "menu.html";
-		}
+// ================================
+// CONSULTAR USUÁRIOS (Sincronizado)
+// ================================
+async function consultarUsuarios() {
+    try {
+        const res = await fetch(API, {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        });
 
-		function logout() {
-			window.location.href = "menu.html";
-		}
+        if (!res.ok) {
+            throw new Error(`Erro HTTP: ${res.status}`);
+        }
 
-		window.onload = consultarUsuarios;
+        usuarios = await res.json();
+        const listDiv = document.getElementById("userList");
+        listDiv.innerHTML = "";
+
+        usuarios.forEach(u => {
+            const div = document.createElement("div");
+            div.className = "user-item";
+            div.textContent = `ID: ${u.id} | Login: ${u.login} | Perfil: ${u.perfil} | Tipo: ${u.tipo}`;
+            div.onclick = () => {
+                idSelecionado = u.id;
+                document.querySelectorAll(".user-item").forEach(x => x.classList.remove("selecionado"));
+                div.classList.add("selecionado");
+            };
+            listDiv.appendChild(div);
+        });
+        idSelecionado = null;
+    } catch (err) {
+        alert("Erro ao consultar usuários. Tente refazer o Login."); 
+        console.error(err);
+    }
+}
+
+// ================================
+// ABRIR MODAL (Com validação de permissão)
+// ================================
+function abrirModal(op) {
+    if (op === "incluir" && !podeIncluir()) {
+        alert("Usuário sem permissão para incluir");
+        return;
+    }
+    if (op === "alterar" && !podeEditar()) {
+        alert("Usuário sem permissão para alterar");
+        return;
+    }
+    if (op === "alterar" && !idSelecionado) {
+        alert("Selecione um usuário na lista primeiro!");
+        return;
+    }
+
+    operacao = op;
+    document.getElementById("modal").style.display = "flex";
+    document.getElementById("modalTitle").textContent = op === "incluir" ? "Incluir Usuário" : "Alterar Usuário";
+
+    if (op === "alterar" && idSelecionado) {
+        const u = usuarios.find(x => x.id === idSelecionado);
+        document.getElementById("modalLogin").value = u.login;
+        document.getElementById("modalSenha").value = "";
+        document.getElementById("modalPerfil").value = u.perfil;
+        document.getElementById("modalTipo").value = u.tipo;
+    } else {
+        document.getElementById("modalLogin").value = "";
+        document.getElementById("modalSenha").value = "";
+        document.getElementById("modalPerfil").value = "usuario";
+        document.getElementById("modalTipo").value = "2";
+    }
+}
+
+// ================================
+// SALVAR (INCLUIR / ALTERAR)
+// ================================
+async function salvarUsuario() {
+    const login = document.getElementById("modalLogin").value.trim();
+    const senha = document.getElementById("modalSenha").value.trim();
+    const perfil = document.getElementById("modalPerfil").value;
+    const tipo = parseInt(document.getElementById("modalTipo").value);
+
+    try {
+        if (operacao === "incluir") {
+            await fetch(API, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify({ login, senha, perfil, tipo })
+            });
+        } else if (operacao === "alterar") {
+            await fetch(`${API}/${idSelecionado}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify({ login, senha, perfil, tipo })
+            });
+        }
+        fecharModal();
+        consultarUsuarios();
+    } catch (err) {
+        alert("Erro ao salvar usuário");
+        console.error(err);
+    }
+}
+
+// ================================
+// EXCLUIR USUÁRIO
+// ================================
+async function excluirUsuario() {
+    if (!podeExcluir()) {
+        alert("Usuário sem permissão para excluir");
+        return;
+    }
+    if (!idSelecionado) {
+        alert("Selecione um usuário");
+        return;
+    }
+    if (idSelecionado === 1 && tipoUsuario !== 0) {
+        alert("Somente administrador raiz pode excluir este ID");
+        return;
+    }
+
+    if (!confirm("Confirma exclusão?")) return;
+
+    try {
+        const response = await fetch(`${API}/${idSelecionado}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        });
+
+        if (!response.ok) {
+            alert("Erro ao excluir usuário");
+            return;
+        }
+        idSelecionado = null;
+        consultarUsuarios();
+    } catch (err) {
+        alert("Erro ao excluir");
+        console.error(err);
+    }
+}
+		
 	</script>
+	
+	
+
+//****************************************************fim script
+
+
+	
 </body>
 </html>
