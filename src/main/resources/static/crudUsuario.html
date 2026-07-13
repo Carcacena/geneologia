@@ -117,7 +117,6 @@
 <body>
 
 	<div class="container">
-
 		<h2>Painel de Usuário – Teste Final</h2>
 		<button onclick="abrirModal('incluir')">➕ Incluir</button>
 		<button onclick="abrirModal('alterar')">✏ Alterar</button>
@@ -125,65 +124,32 @@
 		<button onclick="voltarMenu()">⬅ Voltar ao Menu</button>
 		<div id="userList"></div>
 	</div>
-
-
-
 	<div class="modal" id="modal">
-
-	
-
 		<div class="modal-content">
-
 			<h3 id="modalTitle"></h3>
-
 			<label>Login:</label>
-
 			<input type="text" id="modalLogin">
-
 			<label>Senha:</label>
-
 			<input type="password" id="modalSenha">
-
 			<label style="display:flex;align-items:center;margin-top:8px;gap:5px;">
-
 			    <input
-
 			        type="checkbox"
-
 			        onclick="mostrarSenha()"
-
 			        style="width:auto;"
-
-			    >
-
+		    >
 		    Ver senha 👁
-
 			</label>
-
 			<label>Perfil:</label>
-
 			<select id="modalPerfil">
-
 				<option value="usuario">usuario</option>
-
 				<option value="adm">adm</option>
-
 			</select>
-
 			<label>Tipo:</label>
-
 			<select id="modalTipo">
-
 				<option value="0">0 = super admin</option>
-
 				<option value="1">1 = admin</option>
-
 				<option value="2">2 = usuário</option>
-
 			</select>
-
-			
-
 			<div class="modal-buttons">
 
 			    <button onclick="salvarUsuario()">Salvar</button>
