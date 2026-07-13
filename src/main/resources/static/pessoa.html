@@ -181,44 +181,27 @@ function ativarDragPainel() {
         drag = false;
     });
 }
-async function carregar() {
-    try {
-        // Busca o token com segurança
-        const tokenLocalStorage = localStorage.getItem("token");
-        if (!tokenLocalStorage) {
-            console.error("Token não encontrado no localStorage");
-            return;
-        }
-        const token = JSON.parse(
+async function carregar(){
+
+    const token = JSON.parse(
         localStorage.getItem("token")
-  		  ).token;
+    ).token;
 
-      //  const token = JSON.parse(tokenLocalStorage).token;
+    const resp = await fetch('/pessoas', {
 
-        // Faz a requisição HTTP
-        const resp = await fetch('/pessoas', {
-            headers: {
-                "Authorization": "Bearer " + token
-            }
-        });
-
-        console.log("Status da resposta:", resp.status);
-
-        // Verifica se a resposta foi bem-sucedida (status 200-299)
-        if (!resp.oficial && !resp.ok) {
-            throw new Error(`Erro na requisição: ${resp.status}`);
+        headers: {
+            "Authorization": "Bearer " + token
         }
 
-        // Declara a variável localmente ou atualiza a global corretamente
-        const pessoas = await resp.json();
+    });
 
-        // Passa os dados diretamente para a função desenhar
-        desenhar(pessoas);
+    console.log(resp.status);
 
-    } catch (erro) {
-        console.error("Erro ao carregar ou desenhar os dados:", erro);
-    }
+    pessoas = await resp.json();
+
+    desenhar();
 }
+	
 function montar(lista, pai=null){
     return lista
         .filter(p=>{
