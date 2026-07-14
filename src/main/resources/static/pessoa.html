@@ -1,4 +1,4 @@
-html<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -140,7 +140,7 @@ function podeIncluir(){ return tipoUsuario <= 1; }
 function podeExcluir(){ return tipoUsuario === 0; }
 
 // ================================
-// RECUPERAÇÃO SEGURA DO TOKEN (CORRIGIDO)
+// RECUPERAÇÃO SEGURA DO TOKEN
 // ================================
 let token = "";
 try {
@@ -163,7 +163,7 @@ window.onload = async () => {
     await carregar();
 };
 
-function activarDragPainel(){
+function ativarDragPainel(){
     let drag=false, offsetX=0, offsetY=0;
     painel.addEventListener("mousedown", e=>{
         drag=true;
@@ -176,9 +176,9 @@ function activarDragPainel(){
         painel.style.top  = (e.clientY - offsetY) + "px";
     });
     document.addEventListener("mouseup", ()=>{ drag=false; });
-}
+} // ⬅️ CHAVE DE FECHAMENTO CORRETA DO DRAG
 
-async function carregar(){
+async function carregar(){ // ⬅️ AGORA A FUNÇÃO FICA LIVRE E ACESSÍVEL!
     try {
         const resp = await fetch('/pessoas', {
             headers: {
@@ -194,238 +194,200 @@ async function carregar(){
         console.error("Erro ao carregar pessoas:", err);
     }
 }
+	
+	
+//************************************************** */
+	function montar(lista, pai=null){
+	    return lista
+	        .filter(p=>{
+	            let paiId = p.nomeId ?? p.nome_id;
+	            return pai===null ? paiId==null : Number(paiId)===Number(pai);
+	        })
+	        .map(p=>({...p, filhos: montar(lista,p.id)}));
+	}
 
-function montar(lista, pai=null){
-    return lista
-        .filter(p=>{
-            let paiId = p.nomeId ?? p.nome_id;
-            return pai===null ? paiId==null : Number(paiId)===Number(pai);
-        })
-        .map(p=>({...p, filhos: montar(lista,p.id)}));
-}
+	function render(nos, nivel=0){
+	    if(!nos.length) return '';
+	    let html='<ul>';
+	    nos.forEach(n=>{
+	        html+=`<li>
+	            ${n.nome}
+	            ${n.nota?`<div style="font-size:0.8em;color:#555">${n.nota}</div>`:''}
+	            ${nivel>=0?`<span class="action-btn" onclick="abrirPainel(${n.id},this,event)">⚙</span>`:''}
+	            ${render(n.filhos, nivel+1)}
+	        </li>`;
+	    });
+	    html+='</ul>';
+	    return html;
+	}
 
-function render(nos, nivel=0){
-    if(!nos.length) return '';
-    let html='<ul>';
-    nos.forEach(n=>{
-        html+=`<li>
-            ${n.nome}
-            ${n.nota?`<div style="font-size:0.8em;color:#555">${n.nota}</div>`:''}
-            ${nivel>=0?`<span class="action-btn" onclick="abrirPainel(${n.id},this,event)">⚙</span>`:''}
-            ${render(n.filhos, nivel+1)}
-        </li>`;
-    });
-    html+='</ul>';
-    return html;
-}
+	function desenhar(){
+	    document.getElementById('arvore').innerHTML = render(montar(pessoas));
+	}
 
-function desenhar(){
-    document.getElementById('arvore').innerHTML = render(montar(pessoas));
-}
+	function abrirPainel(id, el, ev){
+	    ev.stopPropagation();
+	    selecionadoId = id;
+	    const botoes = painel.querySelectorAll("button");
+	    botoes[0].style.display = podeMover()   ? "inline-block" : "none";
+	    botoes[1].style.display = podeAlterar() ? "inline-block" : "none";
+	    botoes[2].style.display = podeIncluir() ? "inline-block" : "none";
+	    botoes[3].style.display = podeExcluir() ? "inline-block" : "none";
+	    painel.style.display = 'block';
+	    
+	    painel.style.top = el.getBoundingClientRect().top + window.scrollY + 'px';
+	    painel.style.left = el.getBoundingClientRect().left + 30 + window.scrollX + 'px';
+	}
 
-function abrirPainel(id, el, ev){
-    ev.stopPropagation();
-    selecionadoId = id;
-    const botoes = painel.querySelectorAll("button");
-    botoes[0].style.display = podeMover()   ? "inline-block" : "none";
-    botoes[1].style.display = podeAlterar() ? "inline-block" : "none";
-    botoes[2].style.display = podeIncluir() ? "inline-block" : "none";
-    botoes[3].style.display = podeExcluir() ? "inline-block" : "none";
-    painel.style.display = 'block';
-    
-    painel.style.top = el.getBoundingClientRect().top + window.scrollY + 'px';
-    painel.style.left = el.getBoundingClientRect().left + 30 + window.scrollX + 'px';
-}
+	function fecharModal(tipo) {
+	    document.getElementById(`modal-${tipo}`).style.display = 'none';
+	    document.getElementById('overlay').style.display = 'none';
+	}
 
-function fecharModal(tipo) {
-    document.getElementById(`modal-${tipo}`).style.display = 'none';
-    document.getElementById('overlay').style.display = 'none';
-}
+	// INCLUIR
+	function abrirModalIncluir(){
+	    if(!podeIncluir()) return alert("Sem permissão");
+	    painel.style.display='none';
+	    document.getElementById('incluirNome').value = '';
+	    document.getElementById('modal-incluir').style.display='block';
+	    document.getElementById('overlay').style.display='block';
+	}
 
-// INCLUIR
-function abrirModalIncluir(){
-    if(!podeIncluir()) return alert("Sem permissão");
-    painel.style.display='none';
-    document.getElementById('incluirNome').value = '';
-    document.getElementById('modal-incluir').style.display='block';
-    document.getElementById('overlay').style.display='block';
-}
+	async function confirmarIncluir(){
+	    const nome = document.getElementById('incluirNome').value.trim();
+	    if(!nome) return alert("Digite o nome");
 
-async function confirmarIncluir(){
-    const nome = document.getElementById('incluirNome').value.trim();
-    if(!nome) return alert("Digite o nome");
+	    try {
+	        const resp = await fetch('/pessoas', {
+	            method: 'POST',
+	            headers: {
+	                'Content-Type': 'application/json',
+	                'Authorization': 'Bearer ' + token
+	            },
+	            body: JSON.stringify({ nome, nomeId: selecionadoId })
+	        });
 
-    try {
-        const resp = await fetch('/pessoas', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
-            },
-            body: JSON.stringify({ nome, nomeId: selecionadoId })
-        });
+	        if(!resp.ok) throw new Error("Erro ao incluir");
+	        fecharModal('incluir');
+	        await carregar();
+	    } catch(e) {
+	        alert('Erro ao incluir');
+	        console.error(e);
+	    }
+	}
 
-        if(!resp.ok) throw new Error("Erro ao incluir");
-        fecharModal('incluir');
-        await carregar();
-    } catch(e) {
-        alert('Erro ao incluir');
-        console.error(e);
-    }
-}
+	// MOVER
+	function abrirModalMover(){
+	    if(!podeMover()) return alert("Sem permissão");
+	    painel.style.display='none';
+	    let html='';
+	    pessoas.forEach(p=>{
+	        if(p.id!==selecionadoId){
+	            html+=`<div>
+	                <input type="radio" name="destino" value="${p.id}"> ${p.nome}
+	            </div>`;
+	        }
+	    });
+	    document.getElementById('conteudoMover').innerHTML = html;
+	    document.getElementById('modal-mover').style.display='block';
+	    document.getElementById('overlay').style.display='block';
+	}
 
-// MOVER
-function abrirModalMover(){
-    if(!podeMover()) return alert("Sem permissão");
-    painel.style.display='none';
-    let html='';
-    pessoas.forEach(p=>{
-        if(p.id!==selecionadoId){
-            html+=`<div>
-                <input type="radio" name="destino" value="${p.id}"> ${p.nome}
-            </div>`;
-        }
-    });
-    document.getElementById('conteudoMover').innerHTML = html;
-    document.getElementById('modal-mover').style.display='block';
-    document.getElementById('overlay').style.display='block';
-}
+	async function confirmarMover(){
+	    const sel = document.querySelector('input[name="destino"]:checked');
+	    if(!sel) return alert('Escolha um destino');
 
-async function confirmarMover(){
-    const sel = document.querySelector('input[name="destino"]:checked');
-    if(!sel) return alert('Escolha um destino');
+	    try{
+	        const resp = await fetch('/pessoas/mover',{
+	            method:'POST',
+	            headers:{
+	                'Content-Type':'application/json',
+	                'Authorization':'Bearer ' + token
+	            },
+	            body:JSON.stringify({
+	                childId:selecionadoId,
+	                newParentId:Number(sel.value)
+	            })
+	        });
 
-    try{
-        const resp = await fetch('/pessoas/mover',{
-            method:'POST',
-            headers:{
-                'Content-Type':'application/json',
-                'Authorization':'Bearer ' + token
-            },
-            body:JSON.stringify({
-                childId:selecionadoId,
-                newParentId:Number(sel.value)
-            })
-        });
+	        if(!resp.ok) {
+	            alert(await resp.text());
+	            return;
+	        }
+	        fecharModal('mover');
+	        await carregar();
+	    }catch(e){
+	        alert('Erro ao mover');
+	        console.error(e);
+	    }
+	}
 
-        if(!resp.ok) {
-            alert(await resp.text());
-            return;
-        }
-        fecharModal('mover');
-        await carregar();
-    }catch(e){
-        alert('Erro ao mover');
-        console.error(e);
-    }
-}
+	// ALTERAR
+	function abrirModalAlterar(){
+	    if(!podeAlterar()) return alert("Sem permissão");
+	    let p = pessoas.find(x=>x.id===selecionadoId);
+	    if(!p) return;
+	    painel.style.display='none';
+	    document.getElementById('alterarNome').value = p.nome;
+	    document.getElementById('alterarNota').value = p.nota || '';
+	    document.getElementById('modal-alterar').style.display='block';
+	    document.getElementById('overlay').style.display='block';
+	}
 
-// ALTERAR
-function abrirModalAlterar(){
-    if(!podeAlterar()) return alert("Sem permissão");
-    let p = pessoas.find(x=>x.id===selecionadoId);
-    if(!p) return;
-    painel.style.display='none';
-    document.getElementById('alterarNome').value = p.nome;
-    document.getElementById('alterarNota').value = p.nota || '';
-    document.getElementById('modal-alterar').style.display='block';
-    document.getElementById('overlay').style.display='block';
-}
+	async function confirmarAlterar(){
+	    const nome = document.getElementById('alterarNome').value.trim();
+	    const nota = document.getElementById('alterarNota').value.trim();
+	    
+	    try {
+	        const resp = await fetch(`/pessoas/${selecionadoId}`, {
+	            method: 'PUT',
+	            headers: {
+	                'Content-Type': 'application/json',
+	                'Authorization': 'Bearer ' + token
+	            },
+	            body: JSON.stringify({ nome, nota })
+	        });
 
-// MODAIS INCLUIR
+	        if(!resp.ok) throw new Error("Erro ao alterar");
+	        fecharModal('alterar');
+	        await carregar();
+	    } catch(e) {
+	        alert('Erro ao alterar');
+	        console.error(e);
+	    }
+	}
 
+	// EXCLUIR
+	function abrirModalExcluir(){
+	    if(!podeExcluir()) return alert("Sem permissão");
+	    let p = pessoas.find(x=>x.id===selecionadoId);
+	    if(!p) return;
+	    painel.style.display='none';
+	    document.getElementById('excluirNome').textContent = `Deseja excluir: ${p.nome}?`;
+	    document.getElementById('excluirNota').textContent = p.nota ? `Nota: ${p.nota}` : '';
+	    document.getElementById('modal-excluir').style.display='block';
+	    document.getElementById('overlay').style.display='block';
+	}
 
-// MODAIS EXCLUIR
-function abrirModalExcluir(){
-    if(!podeExcluir()) return alert("Sem permissão");
-    let p = pessoas.find(p=>p.id===selecionadoId);
-    if(!p) return;
-    document.getElementById('excluirNome').innerText = p.nome;
-    document.getElementById('excluirNota').innerText = p.nota || '';
-    painel.style.display='none';
-    document.getElementById('modal-excluir').style.display='block';
-    document.getElementById('overlay').style.display='block';
-}
-async function confirmarIncluir(){
+	async function confirmarExcluir(){
+	    try {
+	        const resp = await fetch(`/pessoas/${selecionadoId}`, {
+	            method: 'DELETE',
+	            headers: {
+	                'Authorization': 'Bearer ' + token
+	            }
+	        });
 
-    let nome =
-        document.getElementById('incluirNome').value.trim();
+	        if(!resp.ok) throw new Error("Erro ao excluir");
+	        fecharModal('excluir');
+	        await carregar();
+	    } catch(e) {
+	        alert('Erro ao excluir');
+	        console.error(e);
+	    }
+	}
 
-    if(!nome) return;
-
-    const token = JSON.parse(
-        localStorage.getItem("token")
-		).token;
-
-    try{
-
-        const resp = await fetch('/pessoas', {
-
-            method:'POST',
-
-            headers:{
-                'Content-Type':'application/json',
-                'Authorization':'Bearer ' + token
-            },
-
-            body: JSON.stringify({
-                nome: nome,
-                nota: null,
-                nomeId: selecionadoId
-            })
-        });
-
-        if(!resp.ok){
-
-            console.log(resp.status);
-
-            alert("Erro ao incluir");
-
-            return;
-        }
-
-        fecharModal('incluir');
-
-        await carregar();
-
-    }catch(e){
-
-        console.error(e);
-
-        alert("Erro ao incluir");
-    }
-}
-
-function confirmarExcluir(){
-    pessoas = pessoas.filter(x=>x.id!==selecionadoId);
-    desenhar();
-    fecharModal('excluir');
-}
-
-function fecharModal(tipo){
-    document.getElementById('modal-'+tipo).style.display='none';
-    document.getElementById('overlay').style.display='none';
-}
-
-/* ================================
-       JUDIA - TEXTO + VOZ
-       ================================ */
-const textoJudia = `uai, agora ce cliqua nesta bolinha ao lado do nome, depois escolha:
-
-- Mover: aqui você escolhe outro pai para a pessoa. É só marcar e confirmar.
-- Alterar: você pode mudar o nome ou detalhar informações da pessoa no campo nota.
-- Incluir: adiciona uma nova pessoa na árvore.
-- Excluir: remove a pessoa selecionada, cuidado, essa ação é permanente.`;
-
-setTimeout(() => {
-    const fala = new SpeechSynthesisUtterance(textoJudia);
-    fala.lang = "pt-BR";
-    fala.rate = 1;
-    fala.pitch = 1;
-    fala.volume = 1;
-    speechSynthesis.speak(fala);
-}, 1500);
-</script>
-
-</body>
-</html>
+	</script>
+	</body>
+	</html>
+	
