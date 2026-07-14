@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+html<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <title>Genealogia Profissional</title>
 <style>
-body { font-family: Arial; margin:20px; }
+body { font-family: Arial, sans-serif; margin:20px; }
 ul { list-style:none; padding-left:20px; }
 li { margin:4px 0; position:relative; }
 #arvore { margin-top:20px; }
@@ -79,8 +79,6 @@ li { margin:4px 0; position:relative; }
     <button onclick="abrirModalMover()">Mover</button>
     <button onclick="abrirModalAlterar()">Alterar</button>
     <button onclick="abrirModalIncluir()">Incluir</button>
-	
-	
     <button onclick="abrirModalExcluir()">Excluir</button>
 </div>
 
@@ -119,7 +117,6 @@ li { margin:4px 0; position:relative; }
 <div class="overlay" id="overlay"></div>
 <div id="judiaFigura">JUDIA</div>
 
-
 <!-- Modal Incluir -->
 <div class="modal" id="modal-incluir">
     <h3>Incluir Pessoa</h3>
@@ -130,16 +127,35 @@ li { margin:4px 0; position:relative; }
 		<button onclick="fecharModal('incluir')">Cancelar</button>
     </div>
 </div>
+
 <script>
 let pessoas = [];
 let selecionadoId = null;
 let painel;
 
-const tipoUsuario = parseInt(sessionStorage.getItem("tipo") || "9");
+const tipoUsuario = parseInt(sessionStorage.getItem("tipo") || "0");
 function podeMover(){ return true; }
 function podeAlterar(){ return tipoUsuario <= 1; }
 function podeIncluir(){ return tipoUsuario <= 1; }
 function podeExcluir(){ return tipoUsuario === 0; }
+
+// ================================
+// RECUPERAÇÃO SEGURA DO TOKEN (CORRIGIDO)
+// ================================
+let token = "";
+try {
+    const tokenStorage = localStorage.getItem("token");
+    if (tokenStorage) {
+        if (tokenStorage.trim().startsWith("ey") || !tokenStorage.includes("{")) {
+            token = tokenStorage.trim();
+        } else {
+            token = JSON.parse(tokenStorage).token;
+        }
+    }
+} catch (e) {
+    console.error("Erro ao ler o token do localStorage:", e);
+    token = localStorage.getItem("token") || "";
+}
 
 window.onload = async () => {
     painel = document.getElementById('painel');
@@ -147,7 +163,7 @@ window.onload = async () => {
     await carregar();
 };
 
-function ativarDragPainel(){
+function activarDragPainel(){
     let drag=false, offsetX=0, offsetY=0;
     painel.addEventListener("mousedown", e=>{
         drag=true;
@@ -163,25 +179,22 @@ function ativarDragPainel(){
 }
 
 async function carregar(){
+    try {
+        const resp = await fetch('/pessoas', {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        });
 
-    const token = JSON.parse(
-        localStorage.getItem("token")
-    ).token;
+        if (!resp.ok) throw new Error(`Erro HTTP: ${resp.status}`);
 
-    const resp = await fetch('/pessoas', {
-
-        headers: {
-            "Authorization": "Bearer " + token
-        }
-
-    });
-
-    console.log(resp.status);
-
-    pessoas = await resp.json();
-
-    desenhar();
+        pessoas = await resp.json();
+        desenhar();
+    } catch(err) {
+        console.error("Erro ao carregar pessoas:", err);
+    }
 }
+
 function montar(lista, pai=null){
     return lista
         .filter(p=>{
@@ -198,7 +211,7 @@ function render(nos, nivel=0){
         html+=`<li>
             ${n.nome}
             ${n.nota?`<div style="font-size:0.8em;color:#555">${n.nota}</div>`:''}
-            ${nivel>=2?`<span class="action-btn" onclick="abrirPainel(${n.id},this,event)">⚙</span>`:''}
+            ${nivel>=0?`<span class="action-btn" onclick="abrirPainel(${n.id},this,event)">⚙</span>`:''}
             ${render(n.filhos, nivel+1)}
         </li>`;
     });
@@ -219,28 +232,49 @@ function abrirPainel(id, el, ev){
     botoes[2].style.display = podeIncluir() ? "inline-block" : "none";
     botoes[3].style.display = podeExcluir() ? "inline-block" : "none";
     painel.style.display = 'block';
-    if(!painel.style.left){
-        painel.style.top = el.getBoundingClientRect().top + window.scrollY + 'px';
-        painel.style.left = el.getBoundingClientRect().left + 30 + window.scrollX + 'px';
-    }
+    
+    painel.style.top = el.getBoundingClientRect().top + window.scrollY + 'px';
+    painel.style.left = el.getBoundingClientRect().left + 30 + window.scrollX + 'px';
 }
 
-// MODAIS INCLUIR
+function fecharModal(tipo) {
+    document.getElementById(`modal-${tipo}`).style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+}
 
+// INCLUIR
 function abrirModalIncluir(){
-
     if(!podeIncluir()) return alert("Sem permissão");
-
     painel.style.display='none';
-
     document.getElementById('incluirNome').value = '';
-
     document.getElementById('modal-incluir').style.display='block';
-
     document.getElementById('overlay').style.display='block';
 }
 
-// MODAIS MOVER
+async function confirmarIncluir(){
+    const nome = document.getElementById('incluirNome').value.trim();
+    if(!nome) return alert("Digite o nome");
+
+    try {
+        const resp = await fetch('/pessoas', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ nome, nomeId: selecionadoId })
+        });
+
+        if(!resp.ok) throw new Error("Erro ao incluir");
+        fecharModal('incluir');
+        await carregar();
+    } catch(e) {
+        alert('Erro ao incluir');
+        console.error(e);
+    }
+}
+
+// MOVER
 function abrirModalMover(){
     if(!podeMover()) return alert("Sem permissão");
     painel.style.display='none';
@@ -258,97 +292,44 @@ function abrirModalMover(){
 }
 
 async function confirmarMover(){
-
-    const sel =
-        document.querySelector('input[name="destino"]:checked');
-
-    if(!sel){
-        alert('Escolha um destino');
-        return;
-    }
-
-	const token = JSON.parse(
-	    localStorage.getItem("token")
-	).token;
+    const sel = document.querySelector('input[name="destino"]:checked');
+    if(!sel) return alert('Escolha um destino');
 
     try{
-
         const resp = await fetch('/pessoas/mover',{
-
             method:'POST',
-
             headers:{
                 'Content-Type':'application/json',
                 'Authorization':'Bearer ' + token
             },
-
             body:JSON.stringify({
                 childId:selecionadoId,
                 newParentId:Number(sel.value)
             })
         });
 
-        if(!resp.ok){
+        if(!resp.ok) {
             alert(await resp.text());
             return;
         }
-
         fecharModal('mover');
-
         await carregar();
-
     }catch(e){
-
         alert('Erro ao mover');
-
         console.error(e);
     }
 }
 
-// MODAIS ALTERAR
+// ALTERAR
 function abrirModalAlterar(){
     if(!podeAlterar()) return alert("Sem permissão");
-    let p = pessoas.find(p=>p.id===selecionadoId);
+    let p = pessoas.find(x=>x.id===selecionadoId);
     if(!p) return;
+    painel.style.display='none';
     document.getElementById('alterarNome').value = p.nome;
     document.getElementById('alterarNota').value = p.nota || '';
-    painel.style.display='none';
     document.getElementById('modal-alterar').style.display='block';
     document.getElementById('overlay').style.display='block';
-}
-
-async function confirmarAlterar(){
-	const token = JSON.parse(
-		    localStorage.getItem("token")
-		).token;
-
-    try{
-        const resp = await fetch('/pessoas/alterar', {
-            method:'POST',
-			headers:{
-			    'Content-Type':'application/json',
-			    'Authorization':'Bearer ' + token
-			},
-
-            body: JSON.stringify({
-                id: selecionadoId,
-                novoNome: document.getElementById('alterarNome').value,
-                novaNota: document.getElementById('alterarNota').value
-            })
-        });
-
-        if(!resp.ok){
-			Console.log(resp.status);
-            alert("Erro ao salvar");
-            return;
-        }
-
-        fecharModal('alterar');
-        await carregar();
-    }catch(e){
-        console.error(e);
-        alert("Erro ao salvar nota");
-    }
 }
 
 // MODAIS INCLUIR
