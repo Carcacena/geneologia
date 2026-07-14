@@ -257,6 +257,7 @@ function desenhar(){
     document.getElementById('arvore').innerHTML = render(montar(pessoas));
 	
 }
+
 function abrirPainel(id, el, ev){
     ev.stopPropagation();
     selecionadoId = id;
@@ -272,6 +273,11 @@ function abrirPainel(id, el, ev){
     painel.style.top = el.getBoundingClientRect().top + window.scrollY + 'px';
     painel.style.left = el.getBoundingClientRect().left + 30 + window.scrollX + 'px';
 }
+
+
+
+
+	
 
 
 
