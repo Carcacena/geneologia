@@ -255,12 +255,14 @@ function render(nos, nivel=0){
 
 function desenhar(){
     document.getElementById('arvore').innerHTML = render(montar(pessoas));
+	
 }
-
 function abrirPainel(id, el, ev){
     ev.stopPropagation();
     selecionadoId = id;
     const botoes = painel.querySelectorAll("button");
+    
+    // Adicionado os colchetes, [1], [2], [3] para corrigir a lista de botões
     botoes[0].style.display = podeMover()   ? "inline-block" : "none";
     botoes[1].style.display = podeAlterar() ? "inline-block" : "none";
     botoes[2].style.display = podeIncluir() ? "inline-block" : "none";
@@ -270,6 +272,8 @@ function abrirPainel(id, el, ev){
     painel.style.top = el.getBoundingClientRect().top + window.scrollY + 'px';
     painel.style.left = el.getBoundingClientRect().left + 30 + window.scrollX + 'px';
 }
+
+
 
 // MOVER
 function abrirModalMover(){
