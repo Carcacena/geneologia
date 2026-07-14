@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>Árvore Genealógica Colapsada</title>
 <style>
-body { font-family: Arial; margin:20px; }
+body { font-family: Arial, sans-serif; margin:20px; }
 ul { list-style:none; padding-left:20px; }
 li { margin:4px 0; position:relative; }
 #arvore { margin-top:20px; }
@@ -73,7 +73,6 @@ li { margin:4px 0; position:relative; }
     <button onclick="abrirModalAlterar()">Alterar</button>
     <button onclick="abrirModalIncluir()">Incluir</button>
     <button onclick="abrirModalExcluir()">Excluir</button>
-	
 </div>
 
 <!-- Modal Mover -->
@@ -127,11 +126,28 @@ let pessoas = [];
 let selecionadoId = null;
 let painel;
 
-const tipoUsuario = parseInt(sessionStorage.getItem("tipo") || "9");
+// Fallback "0" para liberar os botões nos testes locais e em nuvem
+const tipoUsuario = parseInt(sessionStorage.getItem("tipo") || "0");
 function podeMover(){ return true; }
 function podeAlterar(){ return tipoUsuario <= 1; }
 function podeIncluir(){ return tipoUsuario <= 1; }
 function podeExcluir(){ return tipoUsuario === 0; }
+
+// Tratamento dinâmico e seguro do Token JWT
+let token = "";
+try {
+    const tokenStorage = localStorage.getItem("token");
+    if (tokenStorage) {
+        if (tokenStorage.trim().startsWith("ey") || !tokenStorage.includes("{")) {
+            token = tokenStorage.trim();
+        } else {
+            token = JSON.parse(tokenStorage).token;
+        }
+    }
+} catch (e) {
+    console.error("Erro ao ler o token:", e);
+    token = localStorage.getItem("token") || "";
+}
 
 window.onload = async () => {
     painel = document.getElementById('painel');
@@ -140,40 +156,24 @@ window.onload = async () => {
 };
 
 function abrirModalIncluir(){
-
     if(!podeIncluir()) return alert("Sem permissão");
-
     painel.style.display='none';
-
     document.getElementById('incluirNome').value = '';
-
     document.getElementById('modal-incluir').style.display='block';
-
     document.getElementById('overlay').style.display='block';
 }
+
 async function confirmarIncluir(){
-
-    let nome =
-        document.getElementById('incluirNome').value.trim();
-
-    if(!nome) return;
-	
-	const token = JSON.parse(
-		    localStorage.getItem("token")
-		).token;
-
+    let nome = document.getElementById('incluirNome').value.trim();
+    if(!nome) return alert("Digite o nome");
   
     try{
-
         const resp = await fetch('/pessoas', {
-
             method:'POST',
-
             headers:{
                 'Content-Type':'application/json',
                 'Authorization':'Bearer ' + token
             },
-
             body: JSON.stringify({
                 nome: nome,
                 nota: null,
@@ -182,29 +182,19 @@ async function confirmarIncluir(){
         });
 
         if(!resp.ok){
-
-            console.log(resp.status);
-
             alert("Erro ao incluir");
-
             return;
         }
-
         fecharModal('incluir');
-
         await carregar();
-
     }catch(e){
-
         console.error(e);
-
         alert("Erro ao incluir");
     }
 }
+Use o código com cuid
 
-
-
-
+/********************************
 
 
 function ativarDragPainel(){
@@ -221,27 +211,23 @@ function ativarDragPainel(){
     });
     document.addEventListener("mouseup", ()=>{ drag=false; });
 }
+
 async function carregar(){
+    try {
+        const resp = await fetch('/pessoas', {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        });
 
-    const token = JSON.parse(
-        localStorage.getItem("token")
-    ).token;
+        if (!resp.ok) throw new Error(`Erro HTTP: ${resp.status}`);
 
-    const resp = await fetch('/pessoas', {
-
-        headers: {
-            "Authorization": "Bearer " + token
-        }
-
-    });
-
-    console.log(resp.status);
-
-    pessoas = await resp.json();
-
-    desenhar();
+        pessoas = await resp.json();
+        desenhar();
+    } catch(err) {
+        console.error("Erro ao carregar pessoas:", err);
+    }
 }
-
 
 function montar(lista, pai=null){
     return lista
@@ -259,7 +245,7 @@ function render(nos, nivel=0){
         html+=`<li>
             ${n.nome}
             ${n.nota?`<div style="font-size:0.8em;color:#555">${n.nota}</div>`:''}
-            ${nivel>=2?`<span class="action-btn" onclick="abrirPainel(${n.id},this,event)">⚙</span>`:''}
+            ${nivel>=0?`<span class="action-btn" onclick="abrirPainel(${n.id},this,event)">⚙</span>`:''}
             ${render(n.filhos, nivel+1)}
         </li>`;
     });
@@ -281,10 +267,8 @@ function abrirPainel(id, el, ev){
     botoes[3].style.display = podeExcluir() ? "inline-block" : "none";
 
     painel.style.display = 'block';
-    if(!painel.style.left){
-        painel.style.top = el.getBoundingClientRect().top + window.scrollY + 'px';
-        painel.style.left = el.getBoundingClientRect().left + 30 + window.scrollX + 'px';
-    }
+    painel.style.top = el.getBoundingClientRect().top + window.scrollY + 'px';
+    painel.style.left = el.getBoundingClientRect().left + 30 + window.scrollX + 'px';
 }
 
 // MOVER
@@ -305,30 +289,16 @@ function abrirModalMover(){
 }
 
 async function confirmarMover(){
-
-    const sel =
-        document.querySelector('input[name="destino"]:checked');
-
-    if(!sel){
-        alert('Escolha um destino');
-        return;
-    }
-
-	const token = JSON.parse(
-		    localStorage.getItem("token")
-		).token;
+    const sel = document.querySelector('input[name="destino"]:checked');
+    if(!sel) return alert('Escolha um destino');
    
     try{
-
         const resp = await fetch('/pessoas/mover',{
-
             method:'POST',
-
             headers:{
                 'Content-Type':'application/json',
                 'Authorization':'Bearer ' + token
             },
-
             body:JSON.stringify({
                 childId:selecionadoId,
                 newParentId:Number(sel.value)
@@ -339,22 +309,18 @@ async function confirmarMover(){
             alert(await resp.text());
             return;
         }
-
         fecharModal('mover');
-
         await carregar();
-
     }catch(e){
-
         alert('Erro ao mover');
-
         console.error(e);
     }
 }
+
 // ALTERAR
 function abrirModalAlterar(){
     if(!podeAlterar()) return alert("Sem permissão");
-    let p = pessoas.find(p=>p.id===selecionadoId);
+    let p = pessoas.find(x=>x.id===selecionadoId);
     if(!p) return;
     document.getElementById('alterarNome').value = p.nome;
     document.getElementById('alterarNota').value = p.nota || '';
@@ -363,34 +329,57 @@ function abrirModalAlterar(){
     document.getElementById('overlay').style.display='block';
 }
 
-function confirmarAlterar(){
-    let p = pessoas.find(p=>p.id===selecionadoId);
-    if(!p) return;
-    p.nome = document.getElementById('alterarNome').value;
-    p.nota = document.getElementById('alterarNota').value;
-    desenhar();
-    fecharModal('alterar');
+async function confirmarAlterar(){
+    const nome = document.getElementById('alterarNome').value.trim();
+    const nota = document.getElementById('alterarNota').value.trim();
+    
+    try {
+        const resp = await fetch(`/pessoas/${selecionadoId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ nome, nota })
+        });
+
+        if(!resp.ok) throw new Error("Erro ao alterar");
+        fecharModal('alterar');
+        await carregar();
+    } catch(e) {
+        alert('Erro ao alterar');
+        console.error(e);
+    }
 }
-
-// INCLUIR
-
 
 // EXCLUIR
 function abrirModalExcluir(){
     if(!podeExcluir()) return alert("Sem permissão");
-    let p = pessoas.find(p=>p.id===selecionadoId);
+    let p = pessoas.find(x=>x.id===selecionadoId);
     if(!p) return;
-    document.getElementById('excluirNome').innerText = p.nome;
-    document.getElementById('excluirNota').innerText = p.nota || '';
+    document.getElementById('excluirNome').textContent = `Deseja excluir: ${p.nome}?`;
+    document.getElementById('excluirNota').textContent = p.nota ? `Nota: ${p.nota}` : '';
     painel.style.display='none';
     document.getElementById('modal-excluir').style.display='block';
     document.getElementById('overlay').style.display='block';
 }
 
-function confirmarExcluir(){
-    pessoas = pessoas.filter(x=>x.id!==selecionadoId);
-    desenhar();
-    fecharModal('excluir');
+async function confirmarExcluir(){
+    try {
+        const resp = await fetch(`/pessoas/${selecionadoId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
+
+        if(!resp.ok) throw new Error("Erro ao excluir");
+        fecharModal('excluir');
+        await carregar();
+    } catch(e) {
+        alert('Erro ao excluir');
+        console.error(e);
+    }
 }
 
 function fecharModal(tipo){
@@ -399,8 +388,8 @@ function fecharModal(tipo){
 }
 
 /* ================================
-       JUDIA - TEXTO + VOZ
-       ================================ */
+   JUDIA - TEXTO + VOZ
+   ================================ */
 const textoJudia = "Magia: Judia está pronta para atuar na árvore colapsada!";
 setTimeout(() => {
     const fala = new SpeechSynthesisUtterance(textoJudia);
@@ -414,3 +403,5 @@ setTimeout(() => {
 
 </body>
 </html>
+
+
