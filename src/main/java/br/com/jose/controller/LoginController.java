@@ -1,11 +1,19 @@
 package br.com.jose.controller;
 
+<<<<<<< HEAD
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+=======
+import org.springframework.beans.factory.annotation.Autowired;
+>>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+<<<<<<< HEAD
+=======
+
+>>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 import br.com.jose.DTO.LoginDTO;
 import br.com.jose.Service.BlacklistService;
 import br.com.jose.model.Usuario;
@@ -21,6 +29,7 @@ import java.util.Map;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class LoginController {
 
+<<<<<<< HEAD
     private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
 
     private final UsuarioRepository usuarioRepository;
@@ -62,15 +71,49 @@ public class LoginController {
     public ResponseEntity<Map<String, Object>> login(@RequestBody LoginDTO login) {
         logger.info("===== INICIANDO FLUXO DE LOGIN =====");
         logger.info("Tentativa de login para o usuário: {}", login.getLogin());
+=======
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PasswordEncoder encoder;
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private BlacklistService blacklistService;
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String token) {
+        if (token != null && token.startsWith("Bearer ")) {
+            blacklistService.add(token.substring(7));
+        } else if (token != null) {
+            blacklistService.add(token);
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, String>> login(@RequestBody LoginDTO login) {
+
+        System.out.println("===== LOGIN =====");
+        System.out.println("Login recebido: " + login.getLogin());
+>>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 
         Usuario user = usuarioRepository.findByLogin(login.getLogin());
 
         if (user == null) {
+<<<<<<< HEAD
             logger.warn("Usuário '{}' não foi encontrado no banco de dados.", login.getLogin());
+=======
+            System.out.println("Usuário NÃO encontrado.");
+>>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Collections.singletonMap("error", "Usuário não encontrado"));
         }
 
+<<<<<<< HEAD
         logger.debug("Usuário encontrado. Validando credenciais...");
         
         boolean senhaOk = encoder.matches(login.getSenha(), user.getSenha());
@@ -78,10 +121,20 @@ public class LoginController {
 
         if (!senhaOk) {
             logger.warn("Senha inválida informada para o usuário '{}'.", login.getLogin());
+=======
+        System.out.println("Usuário encontrado.");    
+        System.out.println("Hash no banco: " + user.getSenha());
+
+        boolean senhaOk = encoder.matches(login.getSenha(), user.getSenha());
+        System.out.println("Senha confere? " + senhaOk);
+
+        if (!senhaOk) {
+>>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Collections.singletonMap("error", "Senha inválida"));
         }
 
+<<<<<<< HEAD
         String perfilSeguro = user.getPerfil() != null ? user.getPerfil().toUpperCase() : "USER";
         String token = jwtService.gerarToken(user.getLogin(), perfilSeguro);
 
@@ -96,3 +149,23 @@ public class LoginController {
         return ResponseEntity.ok(response);
     }
 }
+=======
+        String perfilSeguro = user.getPerfil() != null
+                ? user.getPerfil().toUpperCase()
+                : "USER";
+
+        String token = jwtService.gerarToken(user.getLogin(), perfilSeguro);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("token", token);
+
+        return ResponseEntity.ok(response);
+    }
+
+    // Map<String, String> response = new HashMap<>();
+    //    response.put("token", token);
+//
+   //     return ResponseEntity.ok(response);
+  //  }
+} // <--- Cer
+>>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef

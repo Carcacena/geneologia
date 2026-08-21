@@ -17,7 +17,11 @@
   <description>Projeto Árvore Genealógica</description>
 
   <properties>
+<<<<<<< HEAD
     <java.version>17</java.version>
+=======
+    <java.version>21</java.version>
+>>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
   </properties>
 
   <dependencies>
