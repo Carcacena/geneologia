@@ -1,77 +1,31 @@
 package br.com.jose.controller;
 
-<<<<<<< HEAD
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-=======
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
-<<<<<<< HEAD
-=======
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 import br.com.jose.DTO.LoginDTO;
 import br.com.jose.Service.BlacklistService;
 import br.com.jose.model.Usuario;
 import br.com.jose.repository.UsuarioRepository;
 import br.com.jose.security.JwtService;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 @RestController
 @RequestMapping("/auth")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class LoginController {
 
-<<<<<<< HEAD
-    private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
-
-    private final UsuarioRepository usuarioRepository;
-    private final PasswordEncoder encoder;
-    private final JwtService jwtService;
-    private final BlacklistService blacklistService;
-
-    // Injeção de dependência por construtor (Boa prática recomendada pelo Spring)
-    public LoginController(UsuarioRepository usuarioRepository, 
-                           PasswordEncoder encoder, 
-                           JwtService jwtService, 
-                           BlacklistService blacklistService) {
-        this.usuarioRepository = usuarioRepository;
-        this.encoder = encoder;
-        this.jwtService = jwtService;
-        this.blacklistService = blacklistService;
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<Map<String, String>> logout(@RequestHeader(value = "Authorization", required = false) String token) {
-        if (token == null || token.trim().isEmpty()) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Cabeçalho Authorization ausente ou vazio.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
-
-        // Remove o prefixo Bearer caso ele exista
-        String tokenLimpo = token.startsWith("Bearer ") ? token.substring(7).trim() : token.trim();
-        
-        blacklistService.add(tokenLimpo);
-        logger.info("Logout realizado. Token adicionado à blacklist.");
-
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Logout realizado com sucesso");
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginDTO login) {
-        logger.info("===== INICIANDO FLUXO DE LOGIN =====");
-        logger.info("Tentativa de login para o usuário: {}", login.getLogin());
-=======
     @Autowired
     private UsuarioRepository usuarioRepository;
 
@@ -81,8 +35,7 @@ public class LoginController {
     @Autowired
     private JwtService jwtService;
 
-    @Autowired
-    private BlacklistService blacklistService;
+    private final BlacklistService blacklistService = new BlacklistService();
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@RequestHeader("Authorization") String token) {
@@ -96,76 +49,26 @@ public class LoginController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody LoginDTO login) {
-
-        System.out.println("===== LOGIN =====");
-        System.out.println("Login recebido: " + login.getLogin());
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
-
+        // 1. Busca o usuário diretamente na tabela pelo campo login mapeado no DTO
         Usuario user = usuarioRepository.findByLogin(login.getLogin());
 
-        if (user == null) {
-<<<<<<< HEAD
-            logger.warn("Usuário '{}' não foi encontrado no banco de dados.", login.getLogin());
-=======
-            System.out.println("Usuário NÃO encontrado.");
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Collections.singletonMap("error", "Usuário não encontrado"));
+        // 2. Compara a senha digitada '123' com o Hash BCrypt ativo no MySQL
+        if (user != null && encoder.matches(login.getSenha(), user.getSenha())) {
+            
+            // 3. Força o perfil a ir em maiúsculo (ADMIN) para evitar conflitos de validação no JWT
+            String perfilSeguro = user.getPerfil() != null ? user.getPerfil().toUpperCase() : "USER";
+            
+            // 4. Gera o token utilizando a sua assinatura do JwtService
+            String token = jwtService.gerarToken(user.getLogin(), perfilSeguro);
+            
+            // 5. Monta a resposta estruturada para o appLogin.js receber
+            Map<String, String> response = new HashMap<>();
+            response.put("token", token);
+            return ResponseEntity.ok(response);
         }
 
-<<<<<<< HEAD
-        logger.debug("Usuário encontrado. Validando credenciais...");
-        
-        boolean senhaOk = encoder.matches(login.getSenha(), user.getSenha());
-        logger.info("A senha informada confere com o banco? {}", senhaOk);
-
-        if (!senhaOk) {
-            logger.warn("Senha inválida informada para o usuário '{}'.", login.getLogin());
-=======
-        System.out.println("Usuário encontrado.");    
-        System.out.println("Hash no banco: " + user.getSenha());
-
-        boolean senhaOk = encoder.matches(login.getSenha(), user.getSenha());
-        System.out.println("Senha confere? " + senhaOk);
-
-        if (!senhaOk) {
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Collections.singletonMap("error", "Senha inválida"));
-        }
-
-<<<<<<< HEAD
-        String perfilSeguro = user.getPerfil() != null ? user.getPerfil().toUpperCase() : "USER";
-        String token = jwtService.gerarToken(user.getLogin(), perfilSeguro);
-
-        logger.info("Login bem-sucedido! Token JWT gerado para o usuário '{}'.", login.getLogin());
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", token);
-        response.put("usuarioId", user.getId()); 
-        response.put("login", user.getLogin());
-        response.put("perfil", perfilSeguro);
-
-        return ResponseEntity.ok(response);
+        // Caso a senha ou o usuário estejam incorretos, retorna o erro esperado pelo frontend
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                             .body(Collections.singletonMap("error", "Login inválido"));
     }
 }
-=======
-        String perfilSeguro = user.getPerfil() != null
-                ? user.getPerfil().toUpperCase()
-                : "USER";
-
-        String token = jwtService.gerarToken(user.getLogin(), perfilSeguro);
-
-        Map<String, String> response = new HashMap<>();
-        response.put("token", token);
-
-        return ResponseEntity.ok(response);
-    }
-
-    // Map<String, String> response = new HashMap<>();
-    //    response.put("token", token);
-//
-   //     return ResponseEntity.ok(response);
-  //  }
-} // <--- Cer
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef

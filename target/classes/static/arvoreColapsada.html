@@ -1,28 +1,12 @@
-<<<<<<< HEAD
 
 
-=======
-<<<<<<< HEAD
-
-
-=======
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <title>Árvore Genealógica Colapsada</title>
 <style>
-<<<<<<< HEAD
 body { font-family: Arial, sans-serif; margin:20px; }
-=======
-<<<<<<< HEAD
-body { font-family: Arial, sans-serif; margin:20px; }
-=======
-body { font-family: Arial; margin:20px; }
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 ul { list-style:none; padding-left:20px; }
 li { margin:4px 0; position:relative; }
 #arvore { margin-top:20px; }
@@ -91,13 +75,6 @@ li { margin:4px 0; position:relative; }
     <button onclick="abrirModalAlterar()">Alterar</button>
     <button onclick="abrirModalIncluir()">Incluir</button>
     <button onclick="abrirModalExcluir()">Excluir</button>
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-	
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 </div>
 
 <!-- Modal Mover -->
@@ -151,26 +128,13 @@ let pessoas = [];
 let selecionadoId = null;
 let painel;
 
-<<<<<<< HEAD
 // Fallback "0" para liberar os botões nos testes locais e em nuvem
 const tipoUsuario = parseInt(sessionStorage.getItem("tipo") || "0");
-=======
-<<<<<<< HEAD
-// Fallback "0" para liberar os botões nos testes locais e em nuvem
-const tipoUsuario = parseInt(sessionStorage.getItem("tipo") || "0");
-=======
-const tipoUsuario = parseInt(sessionStorage.getItem("tipo") || "9");
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 function podeMover(){ return true; }
 function podeAlterar(){ return tipoUsuario <= 1; }
 function podeIncluir(){ return tipoUsuario <= 1; }
 function podeExcluir(){ return tipoUsuario === 0; }
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 // Tratamento dinâmico e seguro do Token JWT
 let token = "";
 try {
@@ -187,11 +151,6 @@ try {
     token = localStorage.getItem("token") || "";
 }
 
-<<<<<<< HEAD
-=======
-=======
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 window.onload = async () => {
     painel = document.getElementById('painel');
     ativarDragPainel();
@@ -199,10 +158,6 @@ window.onload = async () => {
 };
 
 function abrirModalIncluir(){
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
     if(!podeIncluir()) return alert("Sem permissão");
     painel.style.display='none';
     document.getElementById('incluirNome').value = '';
@@ -217,51 +172,10 @@ async function confirmarIncluir(){
     try{
         const resp = await fetch('/pessoas', {
             method:'POST',
-<<<<<<< HEAD
-=======
-=======
-
-    if(!podeIncluir()) return alert("Sem permissão");
-
-    painel.style.display='none';
-
-    document.getElementById('incluirNome').value = '';
-
-    document.getElementById('modal-incluir').style.display='block';
-
-    document.getElementById('overlay').style.display='block';
-}
-async function confirmarIncluir(){
-
-    let nome =
-        document.getElementById('incluirNome').value.trim();
-
-    if(!nome) return;
-	
-	const token = JSON.parse(
-		    localStorage.getItem("token")
-		).token;
-
-  
-    try{
-
-        const resp = await fetch('/pessoas', {
-
-            method:'POST',
-
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
             headers:{
                 'Content-Type':'application/json',
                 'Authorization':'Bearer ' + token
             },
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
             body: JSON.stringify({
                 nome: nome,
                 nota: null,
@@ -270,10 +184,6 @@ async function confirmarIncluir(){
         });
 
         if(!resp.ok){
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
             alert("Erro ao incluir");
             return;
         }
@@ -281,42 +191,11 @@ async function confirmarIncluir(){
         await carregar();
     }catch(e){
         console.error(e);
-<<<<<<< HEAD
-=======
-=======
-
-            console.log(resp.status);
-
-            alert("Erro ao incluir");
-
-            return;
-        }
-
-        fecharModal('incluir');
-
-        await carregar();
-
-    }catch(e){
-
-        console.error(e);
-
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
         alert("Erro ao incluir");
     }
 }
 
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-
-
-
-
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 function ativarDragPainel(){
     let drag=false, offsetX=0, offsetY=0;
     painel.addEventListener("mousedown", e=>{
@@ -331,10 +210,6 @@ function ativarDragPainel(){
     });
     document.addEventListener("mouseup", ()=>{ drag=false; });
 }
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 
 async function carregar(){
     try {
@@ -353,33 +228,6 @@ async function carregar(){
     }
 }
 
-<<<<<<< HEAD
-=======
-=======
-async function carregar(){
-
-    const token = JSON.parse(
-        localStorage.getItem("token")
-    ).token;
-
-    const resp = await fetch('/pessoas', {
-
-        headers: {
-            "Authorization": "Bearer " + token
-        }
-
-    });
-
-    console.log(resp.status);
-
-    pessoas = await resp.json();
-
-    desenhar();
-}
-
-
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 function montar(lista, pai=null){
     return lista
         .filter(p=>{
@@ -396,15 +244,7 @@ function render(nos, nivel=0){
         html+=`<li>
             ${n.nome}
             ${n.nota?`<div style="font-size:0.8em;color:#555">${n.nota}</div>`:''}
-<<<<<<< HEAD
             ${nivel>=0?`<span class="action-btn" onclick="abrirPainel(${n.id},this,event)">⚙</span>`:''}
-=======
-<<<<<<< HEAD
-            ${nivel>=0?`<span class="action-btn" onclick="abrirPainel(${n.id},this,event)">⚙</span>`:''}
-=======
-            ${nivel>=2?`<span class="action-btn" onclick="abrirPainel(${n.id},this,event)">⚙</span>`:''}
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
             ${render(n.filhos, nivel+1)}
         </li>`;
     });
@@ -414,40 +254,21 @@ function render(nos, nivel=0){
 
 function desenhar(){
     document.getElementById('arvore').innerHTML = render(montar(pessoas));
-<<<<<<< HEAD
 	
-=======
-<<<<<<< HEAD
-	
-=======
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 }
 
 function abrirPainel(id, el, ev){
     ev.stopPropagation();
     selecionadoId = id;
     const botoes = painel.querySelectorAll("button");
-<<<<<<< HEAD
     
     // Adicionado os colchetes, [1], [2], [3] para corrigir a lista de botões
-=======
-<<<<<<< HEAD
-    
-    // Adicionado os colchetes, [1], [2], [3] para corrigir a lista de botões
-=======
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
     botoes[0].style.display = podeMover()   ? "inline-block" : "none";
     botoes[1].style.display = podeAlterar() ? "inline-block" : "none";
     botoes[2].style.display = podeIncluir() ? "inline-block" : "none";
     botoes[3].style.display = podeExcluir() ? "inline-block" : "none";
 
     painel.style.display = 'block';
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
     painel.style.top = el.getBoundingClientRect().top + window.scrollY + 'px';
     painel.style.left = el.getBoundingClientRect().left + 30 + window.scrollX + 'px';
 }
@@ -459,17 +280,6 @@ function abrirPainel(id, el, ev){
 
 
 
-<<<<<<< HEAD
-=======
-=======
-    if(!painel.style.left){
-        painel.style.top = el.getBoundingClientRect().top + window.scrollY + 'px';
-        painel.style.left = el.getBoundingClientRect().left + 30 + window.scrollX + 'px';
-    }
-}
-
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 // MOVER
 function abrirModalMover(){
     if(!podeMover()) return alert("Sem permissão");
@@ -488,51 +298,16 @@ function abrirModalMover(){
 }
 
 async function confirmarMover(){
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
     const sel = document.querySelector('input[name="destino"]:checked');
     if(!sel) return alert('Escolha um destino');
    
     try{
         const resp = await fetch('/pessoas/mover',{
             method:'POST',
-<<<<<<< HEAD
-=======
-=======
-
-    const sel =
-        document.querySelector('input[name="destino"]:checked');
-
-    if(!sel){
-        alert('Escolha um destino');
-        return;
-    }
-
-	const token = JSON.parse(
-		    localStorage.getItem("token")
-		).token;
-   
-    try{
-
-        const resp = await fetch('/pessoas/mover',{
-
-            method:'POST',
-
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
             headers:{
                 'Content-Type':'application/json',
                 'Authorization':'Bearer ' + token
             },
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
             body:JSON.stringify({
                 childId:selecionadoId,
                 newParentId:Number(sel.value)
@@ -543,10 +318,6 @@ async function confirmarMover(){
             alert(await resp.text());
             return;
         }
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
         fecharModal('mover');
         await carregar();
     }catch(e){
@@ -559,27 +330,6 @@ async function confirmarMover(){
 function abrirModalAlterar(){
     if(!podeAlterar()) return alert("Sem permissão");
     let p = pessoas.find(x=>x.id===selecionadoId);
-<<<<<<< HEAD
-=======
-=======
-
-        fecharModal('mover');
-
-        await carregar();
-
-    }catch(e){
-
-        alert('Erro ao mover');
-
-        console.error(e);
-    }
-}
-// ALTERAR
-function abrirModalAlterar(){
-    if(!podeAlterar()) return alert("Sem permissão");
-    let p = pessoas.find(p=>p.id===selecionadoId);
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
     if(!p) return;
     document.getElementById('alterarNome').value = p.nome;
     document.getElementById('alterarNota').value = p.nota || '';
@@ -588,10 +338,6 @@ function abrirModalAlterar(){
     document.getElementById('overlay').style.display='block';
 }
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 async function confirmarAlterar(){
     const nome = document.getElementById('alterarNome').value.trim();
     const nota = document.getElementById('alterarNota').value.trim();
@@ -622,39 +368,11 @@ function abrirModalExcluir(){
     if(!p) return;
     document.getElementById('excluirNome').textContent = `Deseja excluir: ${p.nome}?`;
     document.getElementById('excluirNota').textContent = p.nota ? `Nota: ${p.nota}` : '';
-<<<<<<< HEAD
-=======
-=======
-function confirmarAlterar(){
-    let p = pessoas.find(p=>p.id===selecionadoId);
-    if(!p) return;
-    p.nome = document.getElementById('alterarNome').value;
-    p.nota = document.getElementById('alterarNota').value;
-    desenhar();
-    fecharModal('alterar');
-}
-
-// INCLUIR
-
-
-// EXCLUIR
-function abrirModalExcluir(){
-    if(!podeExcluir()) return alert("Sem permissão");
-    let p = pessoas.find(p=>p.id===selecionadoId);
-    if(!p) return;
-    document.getElementById('excluirNome').innerText = p.nome;
-    document.getElementById('excluirNota').innerText = p.nota || '';
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
     painel.style.display='none';
     document.getElementById('modal-excluir').style.display='block';
     document.getElementById('overlay').style.display='block';
 }
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 async function confirmarExcluir(){
     try {
         const resp = await fetch(`/pessoas/${selecionadoId}`, {
@@ -671,15 +389,6 @@ async function confirmarExcluir(){
         alert('Erro ao excluir');
         console.error(e);
     }
-<<<<<<< HEAD
-=======
-=======
-function confirmarExcluir(){
-    pessoas = pessoas.filter(x=>x.id!==selecionadoId);
-    desenhar();
-    fecharModal('excluir');
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 }
 
 function fecharModal(tipo){
@@ -688,18 +397,8 @@ function fecharModal(tipo){
 }
 
 /* ================================
-<<<<<<< HEAD
    JUDIA - TEXTO + VOZ
    ================================ */
-=======
-<<<<<<< HEAD
-   JUDIA - TEXTO + VOZ
-   ================================ */
-=======
-       JUDIA - TEXTO + VOZ
-       ================================ */
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
 const textoJudia = "Magia: Judia está pronta para atuar na árvore colapsada!";
 setTimeout(() => {
     const fala = new SpeechSynthesisUtterance(textoJudia);
@@ -713,11 +412,4 @@ setTimeout(() => {
 
 </body>
 </html>
-<<<<<<< HEAD
 
-=======
-<<<<<<< HEAD
-
-=======
->>>>>>> feeace0223390a9c1eb88dc5e2649d51132e90a6
->>>>>>> ff5c8a53cbf33cbf7932575559b7f58580fa23ef
