@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Genealogia Profissional</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			margin: 20px;
+		}
+
+		ul {
+			list-style: none;
+			padding-left: 20px;
+		}
+
+		li {
+			margin: 4px 0;
+			position: relative;
+		}
+
+		#arvore {
+			margin-top: 20px;
+		}
+
+		.action-btn {
+			cursor: pointer;
+			margin-left: 5px;
+			font-weight: bold;
+		}
+
+		.action-btn:hover {
+			color: #4CAF50;
+		}
+
+		/* PAINEL FLUTUANTE */
+		#painel {
+			position: absolute;
+			background: #fff;
+			border: 1px solid #ccc;
+			padding: 8px;
+			border-radius: 6px;
+			display: none;
+			z-index: 1000;
+			cursor: move;
+			white-space: nowrap;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+		}
+
+		#painel button {
+			display: inline-block;
+			margin: 2px;
+		}
+
+		/* MODAIS */
+		.modal {
+			display: none;
+			position: fixed;
+			top: 10%;
+			left: 50%;
+			transform: translateX(-50%);
+			background: #fff;
+			padding: 20px;
+			border: 1px solid #ccc;
+			z-index: 3000;
+			width: 320px;
+			max-height: 400px;
+			overflow: auto;
+		}
+
+		.overlay {
+			display: none;
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: rgba(0, 0, 0, 0.3);
+			z-index: 2000;
+		}
+
+		/* JUDIA - destaque surreal com leque */
+		#judiaFigura {
+			position: fixed;
+			top: 10px;
+			right: 10px;
+			font-size: 1.8rem;
+			color: #FF0000;
+			text-shadow: 0 0 10px #FF0000, 0 0 20px #FF4500, 0 0 30px #FFA500;
+			z-index: 5000;
+			animation: abanar 2s infinite alternate;
+		}
+
+		.btn-remover {
+			background-color: #ff4d4d;
+			color: white;
+			border: none;
+			padding: 6px 12px;
+			border-radius: 4px;
+			cursor: pointer;
+			margin-bottom: 15px;
+			display: block;
+			/* Garante que ele quebre a linha sozinho */
+		}
+
+		.btn-remover:hover {
+			background-color: #e60000;
+			/* Escurece um pouco ao passar o mouse */
+		}
+
+
+
+
+		@keyframes abanar {
+			0% {
+				transform: rotate(0deg);
+			}
+
+			50% {
+				transform: rotate(5deg);
+			}
+
+			100% {
+				transform: rotate(-5deg);
+			}
+		}
+		
+		/* Coloque isso dentro da sua tag <style> atual */
+		#alterarFoto.com-foto-banco::-webkit-file-upload-button + span,
+		#alterarFoto.com-foto-banco {
+		    color: #000 !important;
+		    font-weight: bold;
+		}
+
+		/* Força o navegador a exibir o nome do arquivo que veio do banco no lugar do texto padrão */
+		#alterarFoto.com-foto-banco::after {
+		    content: var(--texto-exibicao);
+		    margin-left: 10px;
+		    font-weight: bold;
+		    color: #333;
+		}
+		
+		
+		
+	</style>
+</head>
+
+<body>
+
+	<h2>Genealogia Profissional</h2>
+
+	<div id="arvore"></div>
+
+	<div id="painel">
+		<button onclick="abrirModalMover()">Mover</button>
+		<button onclick="abrirModalAlterar()">Alterar</button>
+		<button onclick="abrirModalIncluir()">Incluir</button>
+		<button onclick="abrirModalExcluir()">Excluir</button>
+	</div>
+
+	<!-- Modal Mover -->
+	<div class="modal" id="modal-mover">
+		<h3>Escolha o novo pai</h3>
+		<div id="conteudoMover"></div>
+		<br>
+		<button onclick="fecharModal('mover')">Cancelar</button>
+		<button onclick="confirmarMover()">Confirmar</button>
+	</div>
+
+	<!-- Modal Alterar (ATUALIZADA) -->
+	<!-- Modal Alterar -->
+	<div class="modal" id="modal-alterar">
+		<h3>Alterar Pessoa</h3>
+		<div>
+			Nome: <input type="text" id="alterarNome"><br><br>
+			Nota: <textarea id="alterarNota" rows="3" style="width:100%"></textarea><br><br>
+
+			Incluir --> Foto/Mídia: <input type="file" id="alterarFoto" accept="image/*,audio/mp3"><br><br>
+			<div id="fotoAtualNome" style="margin-top: 5px; font-size: 13px;"></div>
+			<!-- 💡 BOTÃO ADICIONADO PARA REMOVER A FOTO TOTALMENTE -->
+			<!--<button type="button" onclick="removerFotoCadastrada()" style="background-color: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-bottom: 15px;">Remover Foto Atual</button>
+        <br>-->
+			<button type="button" class="btn-remover" onclick="removerFotoCadastrada()">Remover Foto Atual</button>
+			<button onclick="confirmarAlterar()">Confirmar</button>
+			<button onclick="fecharModal('alterar')">Voltar</button>
+		</div>
+	</div>
+
+
+
+
+	<!-- Modal Excluir -->
+	<div class="modal" id="modal-excluir">
+		<h3>Excluir Pessoa</h3>
+		<div>
+			<div id="excluirNome"></div>
+			<div id="excluirNota" style="margin-top:5px; font-size:0.9em; color:#555;"></div>
+			<br>
+			<button onclick="confirmarExcluir()">Confirmar</button>
+			<button onclick="fecharModal('excluir')">Voltar</button>
+		</div>
+	</div>
+
+	<div class="overlay" id="overlay"></div>
+	<div id="judiaFigura">JUDIA</div>
+
+	<!-- Modal Incluir (ATUALIZADA) -->
+	<div class="modal" id="modal-incluir">
+		<h3>Incluir Pessoa</h3>
+		<div>
+			<label for="incluirNome">Nome:</label>
+			<input type="text" id="incluirNome"><br><br>
+			<!-- Campo adicionado para incluir a foto inicial -->
+			<label for="incluirFoto">Foto/Mídia:</label>
+			<input type="file" id="incluirFoto" accept="image/*,audio/mp3"><br><br>
+			<button onclick="confirmarIncluir()">Confirmar</button>
+			<button onclick="fecharModal('incluir')">Cancelar</button>
+		</div>
+	</div>
+
+	<script>
+		let pessoas = [];
+		let selecionadoId = null;
+		let painel;
+
+		const tipoUsuario = parseInt(sessionStorage.getItem("tipo") || "0");
+		function podeMover() {return true;}
+		function podeAlterar() {return tipoUsuario <= 1;}
+		function podeIncluir() {return tipoUsuario <= 1;}
+		function podeExcluir() {return tipoUsuario === 0;}
+
+		// ================================
+		// RECUPERAÇÃO SEGURA DO TOKEN
+		// ================================
+		let token = "";
+		try {
+			const tokenStorage = localStorage.getItem("token");
+			if (tokenStorage) {
+				if (tokenStorage.trim().startsWith("ey") || !tokenStorage.includes("{")) {
+					token = tokenStorage.trim();
+				} else {
+					token = JSON.parse(tokenStorage).token;
+				}
+			}
+		} catch (e) {
+			console.error("Erro ao ler o token do localStorage:", e);
+			token = localStorage.getItem("token") || "";
+		}
+
+		window.onload = async () => {
+			painel = document.getElementById('painel');
+			ativarDragPainel();
+			await carregar();
+		};
+
+		/* ================================
+		   JUDIA - TEXTO + VOZ
+		   ================================ */
+		   const textoJudia =
+		       "UAI Judia sua assistente virtual, se você clicar em mover, você move uma pessoa de uma raiz para outra! " +
+		       "Alterar: você pode alterar o nome de uma pessoa, também pode incluir ou remover fotos. " +
+		       "Incluir: você pode incluir uma nova pessoa na árvore genealógica. " +
+		       "Excluir: permite remover uma pessoa da árvore, conforme sua permissão." +
+			   "Judia explica é um presente do zé. Com respeito a todos fiquem na paz de nosso senhor JESUS CRISTO  .";
+		   setTimeout(() => {
+
+		       const fala = new SpeechSynthesisUtterance(textoJudia);
+
+		       fala.lang = "pt-BR";
+		       fala.rate = 1;
+		       fala.pitch = 1;
+		       fala.volume = 1;
+
+		       speechSynthesis.speak(fala);
+
+		   }, 1500);
+		
+
+	</script> <!-- 💡 Fechamento seguro do bloco de scripts, SEM chaves perdidas -->
+	<script>
+	    // funções que ainda ficaram no HTML
+	</script>
+
+	<script src="appPessoa.js"></script>
+
+
+</body>
+
+</html>
