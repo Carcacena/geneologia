@@ -200,6 +200,20 @@ async function confirmarMover() {
         console.error(e);
     }
 }
+
+// EXCLUIR
+function abrirModalExcluir(){
+    if(!podeExcluir()) return alert("Sem permissão");
+    let p = pessoas.find(x=>x.id===selecionadoId);
+    if(!p) return;
+    document.getElementById('excluirNome').textContent = `Deseja excluir: ${p.nome}?`;
+    document.getElementById('excluirNota').textContent = p.nota ? `Nota: ${p.nota}` : '';
+    painel.style.display='none';
+    document.getElementById('modal-excluir').style.display='block';
+    document.getElementById('overlay').style.display='block';
+}
+
+
 function abrirModalAlterar() {
 
     if (!podeAlterar()) return alert("Sem permissão");
@@ -300,7 +314,8 @@ async function confirmarAlterar() {
 // =========================================================================
 async function confirmarExcluir() {
     try {
-        const resp = await fetch(`/pessoas/${selecionadoId}`, {
+      
+		const  resp = await fetch(`/pessoas/${selecionadoId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': 'Bearer ' + token
